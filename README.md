@@ -1,5 +1,6 @@
 # batdongsan
 Nhóm 5: Website đăng tin bất động sản
+LINK VẼ CÁC SƠ ĐỒ : https://drive.google.com/file/d/1XF6FSeYZOKzzvXRsZ5XvLV7V2BJnDOZU/view?usp=sharing
 Trần Đức Lương - 221230913
 Nguyễn Huy Hoàng - 221230844
 Phạm Xuân Huy - 221230859
@@ -31,19 +32,5 @@ Repo này cũng lưu trữ **báo cáo phân tích & thiết kế hệ thống**
 - Backend: PHP / ASP.NET / Node.js / … (cập nhật sau).
 - Database: SQL Server.
 
----
-
-## Cách tham gia
-1. **Fork repo** về GitHub cá nhân.
-2. **Clone** về máy:  
-   ```bash
-  git clone https://github.com/<ten-repo>.git
-3.Tạo branch riêng khi làm việc:
-git checkout -b feature/<ten-tinh-nang>
-4.Commit và push code/tài liệu:
-git add .
-git commit -m "Thêm chức năng X"
-git push origin feature/<ten-tinh-nang>
-5.Tạo Pull Request (PR) để nhóm review và merge vào main
 
 
