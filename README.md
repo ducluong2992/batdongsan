@@ -1,9 +1,9 @@
-# batdongsan
-Nhóm 5: Website đăng tin bất động sản
-LINK VẼ CÁC SƠ ĐỒ : https://drive.google.com/file/d/1XF6FSeYZOKzzvXRsZ5XvLV7V2BJnDOZU/view?usp=sharing
+NHÓM 9 : WEBSITE ĐĂNG TIN MUA BÁN BẤT ĐỘNG SẢN 
+- THÀNH VIÊN TRONG NHÓM:
 Trần Đức Lương - 221230913
 Nguyễn Huy Hoàng - 221230844
 Phạm Xuân Huy - 221230859
+- LINK VẼ CÁC SƠ ĐỒ : https://drive.google.com/file/d/1XF6FSeYZOKzzvXRsZ5XvLV7V2BJnDOZU/view?usp=sharing
 
 Dự án xây dựng website cho phép người dùng **đăng tin mua bán/cho thuê bất động sản**, với chức năng phân quyền (người dùng, quản trị viên), quản lý tin đăng và các module liên quan.  
 Repo này cũng lưu trữ **báo cáo phân tích & thiết kế hệ thống** phục vụ cho học tập và phát triển.
