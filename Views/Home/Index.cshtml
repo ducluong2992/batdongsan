@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- BANNER + FILTER GLASS -->
+<div class="banner position-relative d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="overlay"></div>
+
+    <div class="container position-relative z-2">
+        <h1 class="brand-title mb-3">HHL <span>RealEstate</span></h1>
+        <h2 class="text-white fw-bold mb-2">CÁCH TIẾP CẬN BẤT ĐỘNG SẢN NHANH NHẤT</h2>
+        <p class="text-white-50 mb-4">Tìm kiếm bất động sản dễ dàng, nhanh chóng và chính xác</p>
+
+        <!-- Khối lọc hòa trộn với nền -->
+        <div class="search-box glass mx-auto p-4 rounded-4" style="max-width: 980px;">
+            <form method="get" asp-controller="Home" asp-action="Search" class="d-flex gap-2">
+                <select class="form-select pill" name="TinhThanh">
+                    <option value="">Tỉnh/Thành</option>
+                    <option>Hà Nội</option>
+                    <option>TP. Hồ Chí Minh</option>
+                    <option>Đà Nẵng</option>
+                </select>
+
+                <select class="form-select pill" name="PhuongXa">
+                    <option value="">Phường/Xã</option>
+                </select>
+
+                <select class="form-select pill" name="LoaiHinh">
+                    <option value="">Loại hình</option>
+                    <option>Chung cư</option>
+                    <option>Nhà ở</option>
+                    <option>Đất nền</option>
+                    <option>Biệt thự</option>
+                </select>
+
+                <select class="form-select pill" name="Gia">
+                    <option value="">Giá</option>
+                    <option>Dưới 1 tỷ</option>
+                    <option>1 - 3 tỷ</option>
+                    <option>3 - 5 tỷ</option>
+                    <option>5 - 10 tỷ</option>
+                    <option>Trên 10 tỷ</option>
+                </select>
+
+                <button class="search-btn">Tìm kiếm</button>
+            </form>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- DANH SÁCH BĐS -->
+<div class="container my-5">
+    <h3 class="mb-4 fw-bold text-primary">Bất động sản đang bán</h3>
+    <div class="row g-4">
+        @foreach (var item in ViewBag.ListBatDongSan ?? new List<dynamic>())
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100 border-0 rounded-4 overflow-hidden">
+                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.Ten" style="height:220px;object-fit:cover;">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">@item.Ten</h5>
+                        <p class="card-text text-muted mb-3">
+                            <i class="bi bi-geo-alt"></i> @item.DiaChi <br />
+                            <strong class="text-danger">@item.Gia VNĐ</strong>
+                        </p>
+                        <a href="@Url.Action("ChiTiet", "BatDongSan", new { id = item.Id })"
+                           class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

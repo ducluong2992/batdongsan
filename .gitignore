@@ -1,0 +1,12 @@
+﻿# Bỏ qua các file build tạm
+bin/
+obj/
+
+# Bỏ file của Visual Studio
+.vs/
+*.user
+*.suo
+
+# Bỏ file cấu hình cá nhân (chuỗi kết nối SQL)
+appsettings.json
+appsettings.Development.json

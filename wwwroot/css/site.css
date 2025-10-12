@@ -1,0 +1,121 @@
+﻿
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+/*NavBar*/
+.custom-navbar {
+    background-color: #f5fdff; 
+}
+/* Tất cả chữ trong navbar */
+.navbar .nav-link {
+    color: black; 
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+    .navbar .nav-link:hover,
+    .navbar .nav-link:focus,
+    .navbar .nav-link.active {
+        color: #007BFF !important; 
+    }
+/* Dropdown menu */
+.navbar .dropdown-menu {
+    background-color: #f5fdff;
+    border-radius: 0.5rem;
+}
+.navbar .dropdown-item {
+    color: black !important; 
+}
+    .navbar .dropdown-item:hover {
+/*        background-color: #d9d9d9;*/
+        color: #007BFF !important;
+    }
+
+
+/*Logo*/
+/* Thương hiệu */
+.brand-title {
+    font-size: 4.5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* chữ gradient */
+    display: inline-block;
+}
+
+    /* Dòng HHL màu đậm hơn */
+    .brand-title span {
+        font-weight: 700;
+    }
+.logo-img {
+    height: auto; 
+    width: 150px; 
+    object-fit: contain;
+}
+.navbar-brand {
+    padding: 0;
+    margin-right: 15px;
+}
+
+/* ===== Banner ===== */
+.banner {
+    width: 100%;
+    height: 520px;
+    background: url('/images/TrangChu/anhnen3.jpg') center/cover no-repeat;
+    position: relative;
+    overflow: hidden;
+}
+
+    .banner .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( rgba(6,33,73,0.55), rgba(6,33,73,0.55) ); /* lớp phủ tối giúp chữ & form nổi */
+        z-index: 1;
+    }
+
+    .banner .container {
+        z-index: 2;
+    }
+
+/* Glassmorphism effect cho box */
+.search-box.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Input & Select */
+.form-select.pill,
+.search-btn {
+    height: 42px;
+    font-size: 14px;
+}
+
+
+    .form-select.pill:focus {
+        border-color: #007BFF;
+        box-shadow: 0 0 8px rgba(0,123,255,0.3);
+    }
+
+.search-btn {
+    background-color: #007BFF; /* màu xanh */
+    color: white;
+    border: none;
+    padding: 12px 0; /* cao vừa, không quá dày */
+    border-radius: 50px; /* bo tròn 2 đầu */
+    font-weight: 600;
+    font-size: 15px;
+    width: 100%; /* chiếm hết col-md-2 */
+    transition: background 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+    .search-btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
