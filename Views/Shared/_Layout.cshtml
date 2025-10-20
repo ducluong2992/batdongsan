@@ -1,89 +1,82 @@
-﻿@* <!DOCTYPE html> *@
-@* <html lang="en"> *@
-@* <head> *@
-@*     <meta charset="utf-8" /> *@
-@*     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> *@
-@*     <title>@ViewData["Title"] - bds</title> *@
-@*     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
-@*     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> *@
-@*     <link rel="stylesheet" href="~/bds.styles.css" asp-append-version="true" /> *@
-@* </head> *@
-@* <body> *@
-@*     <header> *@
-@*         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"> *@
-@*             <div class="container-fluid"> *@
-@*                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">bds</a> *@
-@*                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" *@
-@*                         aria-expanded="false" aria-label="Toggle navigation"> *@
-@*                     <span class="navbar-toggler-icon"></span> *@
-@*                 </button> *@
-@*                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between"> *@
-@*                     <ul class="navbar-nav flex-grow-1"> *@
-@*                         <li class="nav-item"> *@
-@*                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a> *@
-@*                         </li> *@
-@*                         <li class="nav-item"> *@
-@*                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
-@*                         </li> *@
-@*                     </ul> *@
-@*                 </div> *@
-@*             </div> *@
-@*         </nav> *@
-@*     </header> *@
-@*     <div class="container"> *@
-@*         <main role="main" class="pb-3"> *@
-@*             @RenderBody() *@
-@*         </main> *@
-@*     </div> *@
-
-@*     <footer class="border-top footer text-muted"> *@
-@*         <div class="container"> *@
-@*             &copy; 2025 - bds - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
-@*         </div> *@
-@*     </footer> *@
-@*     <script src="~/lib/jquery/dist/jquery.min.js"></script> *@
-@*     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
-@*     <script src="~/js/site.js" asp-append-version="true"></script> *@
-@*     @await RenderSectionAsync("Scripts", required: false) *@
-@* </body> *@
-@* </html> *@
-@{
+﻿@{
     Layout = null;
 }
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - RealEstate</title>
+
+    <!-- CSS chính -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        /* Navbar */
+        .navbar-light .navbar-nav .nav-link {
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+            .navbar-light .navbar-nav .nav-link:hover {
+                color: #0d6efd;
+            }
+
+        /* Buttons */
+        .btn-success {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-outline-primary {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Dropdown hover effect */
+        .dropdown-menu li a:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Logo */
+        .logo-img {
+            height: 40px;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
             <div class="container-fluid">
+                <!-- Logo -->
                 <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
                     <img src="~/images/Logo/HHL2.png" alt="HHL RealEstate" class="logo-img">
+                    <span class="ms-2 fw-bold">HHL RealEstate</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-                        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <!-- Left menu -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                        <!-- Trang chủ -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
 
-                        <!-- Loại hình Dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 Loại hình
                             </a>
                             <ul class="dropdown-menu">
@@ -94,37 +87,75 @@
                             </ul>
                         </li>
 
-                        <!-- Dự án -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="DuAn" asp-action="Index">Dự án</a>
                         </li>
 
-                        <!-- Tin tức -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="TinTuc" asp-action="Index">Tin tức</a>
                         </li>
-                    </ul>
 
-                    <!-- Account -->
-                    <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="btn btn-outline-primary me-2" asp-controller="Account" asp-action="Login">Đăng nhập</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                            <a class="nav-link" asp-controller="PhanTichDanhGia" asp-action="Index">Phân tích đánh giá</a>
                         </li>
                     </ul>
 
+                    <!-- Right menu -->
+                    <ul class="navbar-nav align-items-center">
 
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <!-- Nút Đăng tin -->
+                            <li class="nav-item me-2">
+                                <a class="btn btn-success fw-semibold" asp-controller="Post" asp-action="Index">
+                                    <i class="bi bi-pencil-square"></i> Đăng tin
+                                </a>
+                            </li>
+
+                            <!-- Xin chào + dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-semibold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i> Xin chào, @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" asp-controller="TaiKhoan" asp-action="QuanLy">
+                                            <i class="bi bi-gear me-2"></i> Quản lý tài khoản
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger d-flex align-items-center" asp-controller="Account" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- Guest -->
+                            <li class="nav-item me-2">
+                                <a class="btn btn-outline-primary d-flex align-items-center" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-outline-primary d-flex align-items-center" asp-controller="Account" asp-action="Register">
+                                    <i class="bi bi-pencil-square me-1"></i> Đăng ký
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Nội dung -->
-    <div class="container mt-4">
+    <!-- Nội dung chính -->
+    <main class="container mt-4">
         @RenderBody()
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center p-3 mt-4">
@@ -136,4 +167,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

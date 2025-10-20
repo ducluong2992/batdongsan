@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace bds.Models
 {
+    [Table("Role")]
     public class Role
     {
         [Key]

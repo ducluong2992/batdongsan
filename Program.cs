@@ -1,8 +1,17 @@
-using bds.Data;
+﻿using bds.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// Thêm Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // Trang login
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied"; // Khi truy cập trái phép
+    });
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -22,7 +31,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

@@ -1,0 +1,71 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Trang quản trị - RealEstate";
+}
+
+<div class="container-fluid">
+    <main class="px-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2>Bảng điều khiển quản trị</h2>
+        </div>
+
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Bài đăng chờ duyệt</h5>
+                        <p class="card-text display-6 text-primary">12</p>
+                        <a asp-controller="BaiDang" asp-action="ChoDuyet" class="btn btn-primary">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Bài đăng đã duyệt</h5>
+                        <p class="card-text display-6 text-success">84</p>
+                        <a asp-controller="BaiDang" asp-action="DaDuyet" class="btn btn-success">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">Tài khoản người dùng</h5>
+                        <p class="card-text display-6 text-warning">56</p>
+                        <a asp-controller="TaiKhoan" asp-action="Index" class="btn btn-warning">Quản lý</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h4>Thống kê hoạt động</h4>
+            <canvas id="chartThongKe" height="100"></canvas>
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('chartThongKe');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Bài đăng', 'Tài khoản', 'Tin tức', 'Báo cáo'],
+                datasets: [{
+                    label: 'Số lượng',
+                    data: [84, 56, 10, 5],
+                    borderWidth: 1,
+                    backgroundColor: ['#007bff', '#ffc107', '#28a745', '#17a2b8']
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+}

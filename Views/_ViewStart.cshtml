@@ -1,3 +1,10 @@
 ﻿@{
-    Layout = "_Layout";
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = User.IsInRole("Admin") ? "_LayoutAdmin" : "_Layout";
+    }
+    else
+    {
+        Layout = "_Layout"; 
+    }
 }

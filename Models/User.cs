@@ -1,10 +1,12 @@
 ﻿
 using Microsoft.Extensions.Hosting;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 
 namespace bds.Models
 {
+    [Table("User")]
     public class User
     {
         [Key]
