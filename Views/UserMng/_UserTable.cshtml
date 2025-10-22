@@ -1,0 +1,42 @@
+﻿@model List<bds.Models.User>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Username</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Ngày tạo</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Username</td>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>@user.Phone</td>
+                    <td>@user.CreateAt.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">
+                        <form asp-controller="UserMng" asp-action="DeleteUser" method="post" class="d-inline"
+                              onsubmit="return confirm('Xác nhận xóa người dùng này?')">
+                            <input type="hidden" name="id" value="@user.UserID" />
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-muted m-3">Không có người dùng nào.</p>
+}

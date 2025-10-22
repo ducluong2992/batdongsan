@@ -1,0 +1,135 @@
+﻿
+body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f7f9fc;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.navbar {
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.navbar .nav-link {
+    color: #ffffffcc;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+    .navbar .nav-link:hover,
+    .navbar .nav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+    }
+
+.navbar .dropdown-menu {
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: #f1f9ff;
+}
+.btn-warning {
+    background: linear-gradient(90deg, #7ee97a, #005c99);
+    border: none;
+    color: #fff !important;
+    transition: all 0.3s ease;
+}
+
+    .btn-warning:hover {
+        background: linear-gradient(90deg, #005c99, #7ee97a);
+        transform: translateY(-1px);
+    }
+
+.navbar .bi {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+main.container {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+}
+
+    .table thead {
+        background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+        color: #fff;
+        font-weight: 600;
+    }
+
+.table-hover tbody tr:hover {
+    background-color: #f1faff;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+.card-header {
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    color: white;
+    font-weight: 600;
+}
+
+footer {
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    color: #fff;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+}
+.form-control:focus {
+    border-color: #005c99;
+    box-shadow: 0 0 0 0.2rem rgba(0, 92, 153, 0.25);
+}
+
+label {
+    font-weight: 500;
+    color: #005c99;
+}
+.logo-img {
+    width: 150px; 
+    height: auto; 
+    object-fit: contain; 
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3)); 
+}
+
+.dropdown-menu-end {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}

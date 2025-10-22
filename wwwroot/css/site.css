@@ -5,11 +5,9 @@
     box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
-/*NavBar*/
 .custom-navbar {
     background-color: #f5fdff; 
 }
-/* Tất cả chữ trong navbar */
 .navbar .nav-link {
     color: black; 
     font-weight: 500;
@@ -20,7 +18,6 @@
     .navbar .nav-link.active {
         color: #007BFF !important; 
     }
-/* Dropdown menu */
 .navbar .dropdown-menu {
     background-color: #f5fdff;
     border-radius: 0.5rem;
@@ -29,23 +26,16 @@
     color: black !important; 
 }
     .navbar .dropdown-item:hover {
-/*        background-color: #d9d9d9;*/
         color: #007BFF !important;
     }
-
-
-/*Logo*/
-/* Thương hiệu */
 .brand-title {
     font-size: 4.5rem;
     font-weight: 800;
     background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; /* chữ gradient */
+    -webkit-text-fill-color: transparent;
     display: inline-block;
 }
-
-    /* Dòng HHL màu đậm hơn */
     .brand-title span {
         font-weight: 700;
     }
@@ -58,8 +48,6 @@
     padding: 0;
     margin-right: 15px;
 }
-
-/* ===== Banner ===== */
 .banner {
     width: 100%;
     height: 520px;
@@ -71,15 +59,13 @@
     .banner .overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient( rgba(6,33,73,0.55), rgba(6,33,73,0.55) ); /* lớp phủ tối giúp chữ & form nổi */
+        background: linear-gradient( rgba(6,33,73,0.55), rgba(6,33,73,0.55) ); 
         z-index: 1;
     }
 
     .banner .container {
         z-index: 2;
     }
-
-/* Glassmorphism effect cho box */
 .search-box.glass {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
@@ -87,8 +73,6 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
-
-/* Input & Select */
 .form-select.pill,
 .search-btn {
     height: 42px;
@@ -102,18 +86,17 @@
     }
 
 .search-btn {
-    background-color: #007BFF; /* màu xanh */
+    background-color: #007BFF;
     color: white;
     border: none;
-    padding: 12px 0; /* cao vừa, không quá dày */
-    border-radius: 50px; /* bo tròn 2 đầu */
+    padding: 12px 0;
+    border-radius: 50px; 
     font-weight: 600;
     font-size: 15px;
-    width: 100%; /* chiếm hết col-md-2 */
+    width: 100%; 
     transition: background 0.3s ease, transform 0.2s ease;
     cursor: pointer;
 }
-
     .search-btn:hover {
         background-color: #0056b3;
         transform: translateY(-2px);

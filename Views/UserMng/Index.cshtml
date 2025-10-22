@@ -1,0 +1,181 @@
+﻿@model Tuple<List<bds.Models.User>, List<bds.Models.User>>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Quản lý người dùng";
+    var isSuperAdmin = ViewBag.IsSuperAdmin ?? false;
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary mb-4"><i class="bi bi-people"></i> Quản lý người dùng</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    else if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <!-- User Card -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Người dùng (@ViewBag.UserCount)</h5>
+            <input type="text" id="userSearch" class="form-control form-control-sm ms-2" placeholder="Tìm kiếm người dùng..." style="width: 200px;" />
+        </div>
+        <div class="card-body p-0" id="userTableContainer">
+            @Html.Partial("_UserTable", Model.Item1)
+        </div>
+    </div>
+
+    <!-- Admin Card -->
+    @if (isSuperAdmin)
+    {
+        <div class="card mb-5 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Quản trị viên (@ViewBag.AdminCount)</h5>
+                <div class="d-flex align-items-center">
+                    <input type="text" id="adminSearch" class="form-control form-control-sm ms-2" placeholder="Tìm kiếm quản trị viên..." style="width: 200px;" />
+                    @if (isSuperAdmin)
+                    {
+                        <button class="btn btn-light btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                            <i class="bi bi-plus-circle"></i> Thêm quản trị viên
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="card-body p-0" id="adminTableContainer">
+                @Html.Partial("_AdminTable", Model.Item2)
+            </div>
+        </div>
+    }
+   
+</div>
+
+<!-- Add Admin Modal -->
+@if (isSuperAdmin)
+{
+    <div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="UserMng" asp-action="AddAdmin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="addAdminModalLabel"><i class="bi bi-person-plus"></i> Thêm quản trị viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tên đăng nhập</label>
+                            <input type="text" class="form-control" name="username" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" name="password" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" name="fullName" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" name="phone" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Thêm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Admin Modal -->
+    <div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="UserMng" asp-action="Update" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="UserID" id="editUserID" />
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title" id="editAdminModalLabel"><i class="bi bi-pencil-square"></i> Sửa quản trị viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tên đăng nhập</label>
+                            <input type="text" class="form-control" id="editUsername" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="Email" id="editEmail" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" name="FullName" id="editFullName" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" name="Phone" id="editPhone" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Edit modal
+        var editModal = document.getElementById('editAdminModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                document.getElementById('editUserID').value = button.getAttribute('data-userid');
+                document.getElementById('editUsername').value = button.getAttribute('data-username');
+                document.getElementById('editEmail').value = button.getAttribute('data-email');
+                document.getElementById('editFullName').value = button.getAttribute('data-fullname');
+                document.getElementById('editPhone').value = button.getAttribute('data-phone');
+            });
+        }
+
+        // Debounce function
+        function debounce(fn, delay) {
+            let timer;
+            return function (...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        // User search
+        const input = document.getElementById('userSearch');
+        input.addEventListener('input', debounce(function () {
+            fetch(`@Url.Action("SearchUsers", "UserMng")?keyword=${encodeURIComponent(this.value)}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('userTableContainer').innerHTML = html;
+                });
+        }, 300));
+
+        // Admin search
+        const adminInput = document.getElementById('adminSearch');
+        adminInput.addEventListener('input', debounce(function () {
+            fetch(`@Url.Action("SearchAdmins", "UserMng")?keyword=${encodeURIComponent(this.value)}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('adminTableContainer').innerHTML = html;
+                });
+        }, 300));
+    </script>
+}

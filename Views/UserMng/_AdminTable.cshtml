@@ -1,0 +1,56 @@
+﻿@model List<bds.Models.User>
+@{
+    var isSuperAdmin = ViewBag.IsSuperAdmin ?? false;
+}
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Username</th>
+                <th>Họ tên</th>
+                <th>Chức vụ</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Ngày tạo</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var admin in Model)
+            {
+                <tr>
+                    <td>@admin.Username</td>
+                    <td>@admin.FullName</td>
+                    <td>@(admin.IsSuperAdmin ? "Giám đốc" : "QTV")</td>
+                    <td>@admin.Email</td>
+                    <td>@admin.Phone</td>
+                    <td>@admin.CreateAt.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">
+                        @if (isSuperAdmin)
+                        {
+                            <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editAdminModal"
+                                    data-userid="@admin.UserID" data-username="@admin.Username" data-email="@admin.Email"
+                                    data-fullname="@admin.FullName" data-phone="@admin.Phone">
+                                <i class="bi bi-pencil-square"></i> Sửa
+                            </button>
+
+                            <form asp-controller="UserMng" asp-action="DeleteUser" method="post" class="d-inline"
+                                  onsubmit="return confirm('Xác nhận xóa quản trị viên này?')">
+                                <input type="hidden" name="id" value="@admin.UserID" />
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-muted m-3">Chưa có quản trị viên nào.</p>
+}

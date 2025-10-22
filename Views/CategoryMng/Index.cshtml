@@ -1,0 +1,81 @@
+﻿@model List<bds.Models.Category>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<h2 class="text-primary fw-bold mb-4"><i class="bi bi-tags"></i> Quản lý Danh mục</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Add" method="post" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="CategoryName" class="form-control" placeholder="Nhập tên danh mục mới..." required />
+        <button type="submit" class="btn btn-primary px-4 fw-semibold">+ Thêm</button>
+    </div>
+</form>
+
+
+<table class="table table-bordered table-striped align-middle shadow-sm">
+    <thead style="background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff); color: white;">
+        <tr>
+            <th class="text-center" style="width: 10%;">ID</th>
+            <th style="width: 60%;">Tên danh mục</th>
+            <th class="text-center" style="width: 30%;">Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cat in Model)
+        {
+            <tr>
+                <td class="text-center fw-bold">@cat.CategoryID</td>
+                <td>
+                    <form asp-action="Update" method="post" class="d-flex gap-2 align-items-center">
+                        <input type="hidden" name="CategoryID" value="@cat.CategoryID" />
+                        <input type="text" name="CategoryName" class="form-control" value="@cat.CategoryName" required />
+                        <button type="submit" class="btn btn-success btn-sm action-btn">💾 Lưu</button>
+                    </form>
+                </td>
+                <td class="text-center">
+                    <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa danh mục này?');">
+                        <input type="hidden" name="id" value="@cat.CategoryID" />
+                        <button type="submit" class="btn btn-danger btn-sm action-btn">🗑️ Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+
+</table>
+
+<style>
+    .action-btn {
+        width: 70px;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .btn-success.action-btn:hover {
+        background-color: #28a745;
+        transform: scale(1.05);
+    }
+
+    .btn-danger.action-btn:hover {
+        background-color: #c82333;
+        transform: scale(1.05);
+    }
+    thead tr th {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>

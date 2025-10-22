@@ -19,8 +19,9 @@ namespace bds.Models
         public string? Preferences { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.Now;
         public int? RoleID { get; set; }
+        public bool IsSuperAdmin { get; set; } = false;      //IsSuperAdmin = 1 : chủ trang web
 
-       //QUan he
+        //QUan he
         public Role? Role { get; set; }
         public ICollection<Post>? Posts { get; set; }
         public ICollection<Project>? Projects { get; set; }
