@@ -1,0 +1,59 @@
+﻿@model bds.Models.User
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    Layout = ViewData["Layout"]?.ToString();
+    var indexController = ViewData["Layout"]?.ToString() == "_LayoutAdmin" ? "Admin" : "Home";
+
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body text-center p-5">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success mb-3">
+                            @TempData["Success"]
+                        </div>
+                    }
+                    <!-- Ảnh đại diện -->
+                    <div class="mb-4">
+                        <img src="~/images/avt/admin.jpg" alt="Avatar"
+                             class="rounded-circle shadow"
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
+
+                    <!-- Họ tên và vai trò -->
+                    <h3 class="text-primary mb-2">@Model.FullName</h3>
+                    <p class="text-muted mb-4">
+                        <i class="bi bi-person-badge"></i> @Model.Role?.RoleName
+                    </p>
+
+                    <hr />
+
+                    <!-- Thông tin tài khoản -->
+                    <div class="text-start px-3">
+                        <p class="mb-2"><i class="bi bi-person"></i> <strong>Tên đăng nhập:</strong> @Model.Username</p>
+                        <p class="mb-2"><i class="bi bi-envelope"></i> <strong>Email:</strong> @Model.Email</p>
+                        <p class="mb-2"><i class="bi bi-telephone"></i> <strong>Số điện thoại:</strong> @Model.Phone</p>
+                    </div>
+
+                    <hr />
+
+                    <!-- Nút hành động -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <a asp-action="EditProfile" asp-controller="Account" class="btn btn-warning px-4 me-2">
+                            <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                        </a>
+
+                        <a asp-action="Index" asp-controller="@indexController" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left-circle"></i> Quay lại
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

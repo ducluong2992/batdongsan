@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using bds.Data;
 using bds.Models;
 using System.Linq;
-using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace bds.Controllers
 {
@@ -17,10 +17,10 @@ namespace bds.Controllers
         {
             _context = context;
         }
+
         public IActionResult Index()
         {
             return View();
         }
-
     }
 }

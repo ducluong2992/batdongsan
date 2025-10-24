@@ -22,10 +22,10 @@ namespace bds.Controllers
         public async Task<IActionResult> Login(string username, string password) { 
         var user = _context.Users.Include(u=>u.Role).FirstOrDefault(u=>u.Username==username&&u.Password==password);
             if (user == null) {
-                ViewBag.Error = "Ten dang nhap hoac mat khau khong dung";
+                ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không đúng";
                 return View();
             }
-        // Gan Claims
+        // Gắm Claims
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
@@ -96,5 +96,151 @@ namespace bds.Controllers
         {
             return View();
         }
+
+        // PROFILE
+        public IActionResult Profile()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                TempData["Error"] = "Không tìm thấy thông tin người dùng.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+            {
+                TempData["Error"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Login", "Account");
+            }
+            ViewData["Layout"] = user.Role?.RoleName == "Admin" ? "_LayoutAdmin" : "_Layout";
+
+            return View(user);
+        }
+
+        // GET: EditProfile
+        [HttpGet]
+        public IActionResult EditProfile()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Login", "Account");
+            var user = _context.Users
+                               .Include(u => u.Role)
+                               .FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+                return NotFound();
+            ViewData["Layout"] = user.Role?.RoleName == "Admin" ? "_LayoutAdmin" : "_Layout";
+
+            return View(user);
+        }
+
+        // POST: EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var failedUser = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserID == model.UserID);
+
+                ViewData["Layout"] = failedUser?.Role?.RoleName == "Admin" ? "_LayoutAdmin" : "_Layout";
+                return View(model);
+            }
+
+            var existingUser = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserID == model.UserID);
+
+            if (existingUser == null)
+                return NotFound();
+
+            existingUser.FullName = model.FullName;
+            existingUser.Email = model.Email;
+            existingUser.Phone = model.Phone;
+
+            _context.Update(existingUser);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Cập nhật thông tin cá nhân thành công!";
+
+            return RedirectToAction(nameof(Profile));
+        }
+
+        // PASSWORD
+        // GET: EditPassword
+        [HttpGet]
+        public IActionResult EditPassword()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Include(u => u.Role)
+                        .FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            ViewData["Layout"] = user.Role?.RoleName == "Admin" ? "_LayoutAdmin" : "_Layout";
+
+            return View();
+        }
+
+        // POST: EditPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditPassword(string OldPassword, string NewPassword, string ConfirmPassword)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Include(u => u.Role)
+                        .FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+            {
+                TempData["PasswordError"] = "Không tìm thấy tài khoản.";
+                return View();
+            }
+
+            ViewData["Layout"] = user.Role?.RoleName == "Admin" ? "_LayoutAdmin" : "_Layout";
+
+            if (user.Password != OldPassword)
+            {
+                ViewBag.ErrorOld = "Mật khẩu cũ không đúng.";
+                return View();
+            }
+
+            if (NewPassword != ConfirmPassword)
+            {
+                ViewBag.ErrorConfirm = "Mật khẩu xác nhận không khớp.";
+                return View();
+            }
+
+            user.Password = NewPassword;
+            _context.SaveChanges();
+
+            TempData["PasswordSuccess"] = "Đổi mật khẩu thành công!";
+            return RedirectToAction("EditPassword");
+        }
+
+        // AJAX: Check mật khẩu cũ
+        [HttpPost]
+        public IActionResult CheckOldPassword(string oldPassword)
+        {
+            var username = User.Identity?.Name;
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+                return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+
+            bool isMatch = user.Password == oldPassword;
+            return Json(new { success = isMatch });
+        }
+
     }
 }

@@ -42,7 +42,7 @@
                         <!-- Dashboard -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Admin" asp-action="Index">
-                                <i class="bi bi-speedometer2"></i> Trang chủ
+                                <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </li>
 
@@ -96,8 +96,8 @@
                                 <i class="bi bi-person-circle"></i> Xin chào, @adminName
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Profile">Thông tin cá nhân</a></li>
-                                <li><a class="dropdown-item" asp-controller="AdminSettings" asp-action="Index">Cài đặt hệ thống</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Thông tin cá nhân</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="EditPassword">Đổi mật khẩu</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
