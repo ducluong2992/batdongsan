@@ -1,0 +1,180 @@
+﻿@model bds.Models.Project
+@{
+    ViewData["Title"] = Model.ProjectName;
+    var featuredProjects = ViewBag.FeaturedProjects as IEnumerable<bds.Models.Project>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- 🧱 Cột trái: Chi tiết dự án -->
+        <div class="col-lg-8 col-md-7">
+            <a asp-action="Index" asp-controller="Project" class="btn btn-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách dự án
+            </a>
+
+            <h2 class="fw-bold mb-3">@Model.ProjectName</h2>
+
+            <p class="text-muted mb-1">
+                <strong>📍 Vị trí:</strong>
+                @Model.Location,
+                @Model.CommuneWard?.CommuneName,
+                @Model.CommuneWard?.District?.DistrictName,
+                @Model.CommuneWard?.District?.Province?.ProvinceName
+            </p>
+
+            <p class="text-muted mb-1">
+                <strong>👤 Người đăng:</strong> @Model.User?.FullName
+                <span class="ms-3"><strong>📅 Ngày đăng:</strong> @Model.CreateAt.ToString("dd/MM/yyyy")</span>
+            </p>
+
+            <p class="text-muted mb-3">
+                <strong>⚙️ Trạng thái:</strong> @Model.Status |
+                <strong>👁️ Lượt xem:</strong> @Model.ClickCount
+            </p>
+
+            <hr />
+
+            <!-- Ảnh Carousel -->
+            @if (Model.Images != null && Model.Images.Count > 0)
+            {
+                <div id="projectCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded shadow-sm">
+                        @foreach (var image in Model.Images.Select((value, i) => new { i, value }))
+                        {
+                            <div class="carousel-item @(image.i == 0 ? "active" : "")">
+                                <img src="@Url.Content(image.value.ImageUrl)" class="d-block w-100"
+                                     style="height: 400px; object-fit: cover;" alt="Ảnh dự án">
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            }
+
+            <!-- Mô tả -->
+            <h4 class="fw-bold mb-3">📝 Mô tả chi tiết</h4>
+            <div class="p-3 bg-light rounded shadow-sm mb-4">
+                @Html.Raw(Model.Description)
+            </div>
+        </div>
+
+        <!-- 🧭 Cột phải: Dự án nổi bật -->
+        <div class="col-lg-4 col-md-5">
+            <div class="p-3 bg-light rounded shadow-sm mb-4" style="position: sticky; top: 20px;">
+                <h5 class="fw-bold mb-3 text-center text-primary">🌟 Dự án nổi bật</h5>
+
+                @if (featuredProjects != null && featuredProjects.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var item in featuredProjects)
+                        {
+                            <a asp-action="Details" asp-route-id="@item.ProjectID"
+                               class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
+                                <!-- ẢNH LỚN HƠN -->
+                                <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
+                                     alt="@item.ProjectName"
+                                     class="me-3 rounded-3 shadow-sm"
+                                     style="width: 90px; height: 70px; object-fit: cover;">
+
+                                <!-- NỘI DUNG -->
+                                <div class="flex-fill">
+                                    <div class="fw-bold text-dark text-truncate" style="font-size: 1rem;">
+                                        @item.ProjectName
+                                    </div>
+                                    <div class="text-muted small text-truncate mb-1">
+                                        📍 @item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                                    </div>
+                                    <div class="text-secondary small">
+                                        🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Chưa có dự án nổi bật nào.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+ <style >
+    .project-description h2, .project-description h3 {
+        color: #007bff;
+        margin-top: 20px;
+    }
+
+    .project-description p {
+        line-height: 1.8;
+        color: #333;
+    }
+
+    .project-description ul {
+        padding-left: 20px;
+    }
+
+    .project-description img {
+        max-width: 100%;
+        border-radius: 6px;
+        margin: 10px 0;
+    }
+
+    /*
+              Hiệu ứng cho list bên phải (Dự án nổi bật)
+              Bootstrap đã có sẵn class .list-group-item-action
+              nhưng chúng ta làm nó mượt hơn
+            */
+    .list-group-item-action {
+        transition: background-color 0.25s ease-in-out, transform 0.2s ease;
+        border-radius: 10px;
+    }
+
+        .list-group-item-action:hover {
+            background-color: #e7f3ff;
+            transform: translateY(-2px);
+        }
+
+        .list-group-item-action img {
+            border: 2px solid #dee2e6;
+        }
+
+        .list-group-item-action .fw-bold {
+            font-size: 1.05rem;
+        }
+
+        /* Giới hạn text trong phần Dự án nổi bật (sidebar) */
+        .list-group-item-action .flex-fill {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Nếu muốn cho phép xuống tối đa 2 dòng thay vì 1, dùng block clamp: */
+        .list-group-item-action .fw-bold {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* số dòng tối đa */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Giới hạn dòng cho địa chỉ (tránh dài quá) */
+        .list-group-item-action .text-muted {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+</style>
+

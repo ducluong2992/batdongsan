@@ -1,0 +1,192 @@
+﻿@model IEnumerable<bds.Models.Project>
+@{
+    ViewData["Title"] = "Dự án";
+    var featuredProjects = ViewBag.FeaturedProjects as IEnumerable<bds.Models.Project>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+
+        <div class="col-lg-8 col-md-7">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-3 text-center text-primary">Tất cả dự án mới nhất</h3>
+                <a asp-action="Create" class="btn btn-primary custom-btn">
+                    <i class="bi bi-plus-circle"></i> Đăng dự án của bạn
+                </a>
+            </div>
+
+            <div class="row">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border-0 project-card">
+                                <a asp-action="Details" asp-route-id="@item.ProjectID">
+                                    <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
+                                         class="card-img-top rounded-top"
+                                         style="height: 200px; object-fit: cover;" alt="@item.ProjectName" />
+                                </a>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title fw-bold text-truncate">
+                                        <a asp-action="Details" asp-route-id="@item.ProjectID" class="text-decoration-none text-dark stretched-link">
+                                            @item.ProjectName
+                                        </a>
+                                    </h5>
+                                    <p class="card-text text-muted small mb-2">
+                                        📍 @item.CommuneWard?.CommuneName,@item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                                    </p>
+
+                                    @{
+                                        var rawDescription = item.Description ?? "";
+                                        rawDescription = rawDescription
+                                        .Replace("</p>", ". ")
+                                        .Replace("<br>", " ")
+                                        .Replace("<br/>", " ")
+                                        .Replace("<br />", " ")
+                                        .Replace("</li>", ", ")
+                                        .Replace("</ul>", " ")
+                                        .Replace("</ol>", " ");
+                                        string plainDescription = System.Text.RegularExpressions.Regex.Replace(rawDescription, "<.*?>", string.Empty);
+                                        plainDescription = System.Text.RegularExpressions.Regex.Replace(plainDescription, @"\s+", " ").Trim();
+                                        if (plainDescription.Length > 150)
+                                        {
+                                            plainDescription = plainDescription.Substring(0, 150) + "...";
+                                        }
+                                    }
+
+                                    <p class="text-secondary small" style="line-height:1.5; text-align:justify;">
+                                        @plainDescription
+                                    </p>
+
+                                    <div class="mt-auto">
+                                        <small class="text-muted">
+                                            🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
+                                            <a asp-action="Details" asp-route-id="@item.ProjectID" class="text-primary float-end text-decoration-none fw-bold">
+                                                Xem chi tiết →
+                                            </a>
+                                        </small>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Hiện chưa có dự án nào được đăng.</p>
+                }
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-5">
+        <div class="p-3 bg-light rounded shadow-sm mb-4" style="position: sticky; top: 20px;">
+            <h5 class="fw-bold mb-3 text-center text-primary">🌟 Dự án nổi bật</h5>
+
+            @if (featuredProjects != null && featuredProjects.Any())
+            {
+                <div class="list-group">
+                    @foreach (var item in featuredProjects)
+                    {
+                        <a asp-action="Details" asp-route-id="@item.ProjectID"
+                           class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
+                            <!-- ẢNH LỚN HƠN -->
+                            <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
+                                 alt="@item.ProjectName"
+                                 class="me-3 rounded-3 shadow-sm"
+                                 style="width: 90px; height: 70px; object-fit: cover;">
+
+                            <!-- NỘI DUNG -->
+                            <div class="flex-fill">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 1rem;">
+                                    @item.ProjectName
+                                </div>
+                                <div class="text-muted small text-truncate mb-1">
+                                    📍 @item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                                </div>
+                                <div class="text-secondary small">
+                                    🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted text-center">Chưa có dự án nổi bật nào.</p>
+            }
+        </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Hiệu ứng cho thẻ Card bên trái
+          1. Đổ bóng và nâng lên (giống code của bạn)
+          2. Đổi màu Tiêu đề (class .card-title a) thành màu xanh
+        */
+    .project-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+            .project-card:hover .card-title a {
+                color: #0d6efd !important; /* Màu xanh Primary của Bootstrap */
+                text-decoration: underline;
+            }
+
+    /*
+          Hiệu ứng cho list bên phải (Dự án nổi bật)
+          Bootstrap đã có sẵn class .list-group-item-action
+          nhưng chúng ta làm nó mượt hơn
+        */
+        .list-group-item-action {
+        transition: background-color 0.25s ease-in-out, transform 0.2s ease;
+        border-radius: 10px;
+    }
+
+        .list-group-item-action:hover {
+            background-color: #e7f3ff;
+            transform: translateY(-2px);
+        }
+
+        .list-group-item-action img {
+            border: 2px solid #dee2e6;
+        }
+
+        .list-group-item-action .fw-bold {
+            font-size: 1.05rem;
+        }
+
+        /* Giới hạn text trong phần Dự án nổi bật (sidebar) */
+        .list-group-item-action .flex-fill {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Nếu muốn cho phép xuống tối đa 2 dòng thay vì 1, dùng block clamp: */
+        .list-group-item-action .fw-bold {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* số dòng tối đa */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Giới hạn dòng cho địa chỉ (tránh dài quá) */
+        .list-group-item-action .text-muted {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+</style>

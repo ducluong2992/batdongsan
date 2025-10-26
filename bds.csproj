@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\avt\" />
+    <Folder Include="wwwroot\images\projects\" />
   </ItemGroup>
 
   <ItemGroup>

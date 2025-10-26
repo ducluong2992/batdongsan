@@ -15,39 +15,48 @@
         <!-- Khối lọc hòa trộn với nền -->
         <div class="search-box glass mx-auto p-4 rounded-4" style="max-width: 980px;">
             <form method="get" asp-controller="Home" asp-action="Search" class="d-flex gap-2">
-                <select class="form-select pill" name="TinhThanh">
+
+                <!-- Tỉnh/Thành -->
+                <select class="form-select pill" id="ProvinceDropdown" name="ProvinceId">
                     <option value="">Tỉnh/Thành</option>
-                    <option>Hà Nội</option>
-                    <option>TP. Hồ Chí Minh</option>
-                    <option>Đà Nẵng</option>
+                    @foreach (var p in ViewBag.Provinces)
+                    {
+                        <option value="@p.ProvinceID">@p.ProvinceName</option>
+                    }
                 </select>
 
-                <select class="form-select pill" name="PhuongXa">
+                <!-- Quận/Huyện -->
+                <select class="form-select pill" id="DistrictDropdown" name="DistrictId">
+                    <option value="">Quận/Huyện</option>
+                </select>
+
+                <!-- Xã/Phường -->
+                <select class="form-select pill" id="CommuneDropdown" name="CommuneId">
                     <option value="">Phường/Xã</option>
                 </select>
 
+                <!-- Loại hình -->
                 <select class="form-select pill" name="LoaiHinh">
                     <option value="">Loại hình</option>
-                    <option>Chung cư</option>
-                    <option>Nhà ở</option>
-                    <option>Đất nền</option>
-                    <option>Biệt thự</option>
+                    @foreach (var cat in ViewBag.Categories)
+                    {
+                        <option value="@cat.CategoryID">@cat.CategoryName</option>
+                    }
                 </select>
 
+                <!-- Giá -->
                 <select class="form-select pill" name="Gia">
                     <option value="">Giá</option>
-                    <option>Dưới 1 tỷ</option>
-                    <option>1 - 3 tỷ</option>
-                    <option>3 - 5 tỷ</option>
-                    <option>5 - 10 tỷ</option>
-                    <option>Trên 10 tỷ</option>
+                    <option value="1">Dưới 1 tỷ</option>
+                    <option value="2">1 - 3 tỷ</option>
+                    <option value="3">3 - 5 tỷ</option>
+                    <option value="4">5 - 10 tỷ</option>
+                    <option value="5">Trên 10 tỷ</option>
                 </select>
 
                 <button class="search-btn">Tìm kiếm</button>
             </form>
         </div>
-
-
     </div>
 </div>
 
@@ -74,3 +83,56 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // --- Khi chọn TỈNH ---
+            $("#ProvinceDropdown").change(function () {
+                var provinceId = $(this).val();
+                var districtDropdown = $("#DistrictDropdown");
+                var communeDropdown = $("#CommuneDropdown");
+
+                districtDropdown.empty();
+                communeDropdown.empty();
+                communeDropdown.append('<option value="">Phường/Xã</option>');
+
+                if (provinceId) {
+                    districtDropdown.append('<option>Đang tải...</option>');
+                    $.getJSON('/Home/GetDistrictsByProvinceId', { provinceId: provinceId }, function (data) {
+                        districtDropdown.empty();
+                        districtDropdown.append('<option value="">Quận/Huyện</option>');
+                        $.each(data, function (i, d) {
+                            districtDropdown.append(`<option value="${d.id}">${d.name}</option>`);
+                        });
+                    });
+                } else {
+                    districtDropdown.append('<option value="">Quận/Huyện</option>');
+                }
+            });
+
+            // --- Khi chọn QUẬN ---
+            $("#DistrictDropdown").change(function () {
+                var districtId = $(this).val();
+                var communeDropdown = $("#CommuneDropdown");
+
+                communeDropdown.empty();
+
+                if (districtId) {
+                    communeDropdown.append('<option>Đang tải...</option>');
+                    $.getJSON('/Home/GetCommunesByDistrictId', { districtId: districtId }, function (data) {
+                        communeDropdown.empty();
+                        communeDropdown.append('<option value="">Phường/Xã</option>');
+                        $.each(data, function (i, c) {
+                            communeDropdown.append(`<option value="${c.id}">${c.name}</option>`);
+                        });
+                    });
+                } else {
+                    communeDropdown.append('<option value="">Phường/Xã</option>');
+                }
+            });
+
+        });
+    </script>
+}

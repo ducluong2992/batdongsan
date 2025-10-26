@@ -15,27 +15,36 @@ namespace bds.Controllers
         }
         //Dang nhap
         [HttpGet]
-        public IActionResult Login() { 
-        return View();
+        public IActionResult Login(string? returnUrl)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
         }
+
+        
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password) { 
+        public async Task<IActionResult> Login(string username, string password, string? returnUrl)  { 
         var user = _context.Users.Include(u=>u.Role).FirstOrDefault(u=>u.Username==username&&u.Password==password);
             if (user == null) {
                 ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không đúng";
                 return View();
             }
-        // Gắm Claims
-        var claims = new List<Claim>
+            // Gắm Claims
+            var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
             };
 
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
 
             // Chuyen huong theo Role 
             if (user.Role?.RoleName == "Admin")
@@ -44,7 +53,7 @@ namespace bds.Controllers
                 return RedirectToAction("Index", "Home");
         }
 
-        // dang ky
+        //--dki----
         [HttpGet]
         public IActionResult Register()
         {
@@ -52,29 +61,40 @@ namespace bds.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(string username, string password, string email)
+        [ValidateAntiForgeryToken]
+        public IActionResult Register(Register model)
         {
-            if (_context.Users.Any(u => u.Username == username))
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Tên đăng nhập đã tồn tại.";
-                return View();
+                return View(model);
+            }
+
+            // Kiểm tra username trùng (không phân biệt hoa/thường)
+            if (_context.Users.Any(u => u.Username.ToLower() == model.Username.ToLower()))
+            {
+                ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại.");
+                return View(model);
             }
 
             var defaultRole = _context.Roles.FirstOrDefault(r => r.RoleName == "User");
 
             var newUser = new User
             {
-                Username = username,
-                Password = password,
-                Email = email,
+                Username = model.Username,
+                Password = model.Password, // ⚠️ nên mã hóa trước khi lưu (bcrypt/SHA256)
+                FullName = model.FullName,
+                Email = model.Email,
+                Phone = model.PhoneNumber,
                 RoleID = defaultRole?.RoleID
             };
 
             _context.Users.Add(newUser);
             _context.SaveChanges();
 
+            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
             return RedirectToAction("Login");
         }
+
 
         // Dang xuat
         [HttpGet]
