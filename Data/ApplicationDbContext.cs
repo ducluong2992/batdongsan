@@ -9,7 +9,7 @@ namespace bds.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<Post> Post { get; set; }
+        public DbSet<Post> Posts { get; set; }
         public DbSet<SearchHistory> SearchHistories { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<Province> Provinces { get; set; }

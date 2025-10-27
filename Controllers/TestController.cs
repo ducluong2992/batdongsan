@@ -14,7 +14,7 @@ namespace bds.Controllers
 
         public IActionResult Index()
         {
-            var count = _context.Post.Count();
+            var count = _context.Posts.Count();
             return Content($"Kết nối thành công! Có {count} bài đăng trong database.");
         }
     }

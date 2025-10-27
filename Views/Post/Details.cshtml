@@ -1,0 +1,49 @@
+﻿@model bds.Models.Post
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <h2>@Model.Title</h2>
+
+    <div class="mb-3 text-muted">
+        <i class="bi bi-calendar"></i> Đăng ngày: @Model.CreateAt.ToString("dd/MM/yyyy")
+        <span class="ms-3"><i class="bi bi-eye"></i> @Model.ClickCount lượt xem</span>
+    </div>
+
+    <div class="mb-4">
+        @if (Model.Images != null && Model.Images.Any())
+        {
+            <div id="carouselPostImages" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        var img = Model.Images.ElementAt(i);
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@img.ImageUrl" class="d-block w-100" style="max-height:400px;object-fit:cover;" />
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselPostImages" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselPostImages" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        }
+    </div>
+
+    <h5>Thông tin chi tiết</h5>
+    <ul>
+        <li><b>Địa chỉ:</b> @Model.Location</li>
+        <li><b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ</li>
+        <li><b>Diện tích:</b> @(Model.Area ?? 0) m²</li>
+        <li><b>Trạng thái:</b> @Model.Status</li>
+    </ul>
+
+    <h5 class="mt-4">Mô tả</h5>
+    <p>@Html.Raw(Model.Description?.Replace("\n", "<br>"))</p>
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">Quay lại danh sách</a>
+</div>

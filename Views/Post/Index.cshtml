@@ -1,0 +1,38 @@
+﻿@model IEnumerable<bds.Models.Post>
+@{
+    ViewData["Title"] = "Danh sách bài đăng";
+}
+
+<h2 class="text-center mb-4">Danh sách bài đăng</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">Hiện chưa có bài đăng nào được duyệt.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var post in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                         class="card-img-top" alt="@post.Title" style="height:200px; object-fit:cover;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@post.Title</h5>
+                        <p class="card-text text-muted mb-1">
+                            <i class="bi bi-geo-alt"></i> @post.Location
+                        </p>
+                        <p class="card-text text-muted mb-1">
+                            <strong>Giá:</strong> @(post.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ
+                        </p>
+                        <p class="card-text text-muted mb-1">
+                            <strong>Diện tích:</strong> @(post.Area ?? 0) m²
+                        </p>
+                        <a asp-action="Details" asp-route-id="@post.PostID" class="btn btn-primary mt-2">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

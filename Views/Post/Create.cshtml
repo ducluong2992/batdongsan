@@ -1,0 +1,115 @@
+﻿@model bds.Models.Post
+@{
+    ViewData["Title"] = "Đăng bài viết";
+}
+
+<h2 class="text-center mb-4">Đăng bài viết</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="form-group mb-3">
+        <label asp-for="Title">Tiêu đề </label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Description">Mô tả</label>
+        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="CategoryID">Danh mục</label>
+        <select asp-for="CategoryID" asp-items="ViewBag.CategoryList" class="form-control">
+            <option value="">-- Chọn danh mục --</option>
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Price">Giá</label>
+        <input asp-for="Price" class="form-control" type="number" step="0.01" />
+    </div>
+
+    <!-- 🔹 CHỌN VỊ TRÍ (TỈNH / HUYỆN / XÃ) -->
+    <div class="form-group mb-3">
+        <label>Tỉnh/Thành phố</label>
+        <select id="ProvinceID" class="form-control">
+            <option value="">-- Chọn tỉnh --</option>
+            @foreach (var province in (SelectList)ViewData["ProvinceList"])
+            {
+                <option value="@province.Value">@province.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Quận/Huyện</label>
+        <select id="DistrictID" class="form-control">
+            <option value="">-- Chọn quận/huyện --</option>
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Phường/Xã</label>
+        <select asp-for="CommuneID" id="CommuneID" class="form-control">
+            <option value="">-- Chọn phường/xã --</option>
+        </select>
+    </div>
+
+    <!-- 🔹 ĐỊA CHỈ CỤ THỂ -->
+    <div class="form-group mb-3">
+        <label asp-for="Location">Địa chỉ</label>
+        <input asp-for="Location" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Area">Diện tích</label>
+        <input asp-for="Area" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="images">Ảnh bài đăng (nhiều ảnh)</label>
+        <input type="file" name="images" multiple class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Đăng bài</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // --- Khi chọn tỉnh ---
+        $("#ProvinceID").change(function () {
+            var provinceId = $(this).val();
+            $("#DistrictID").html('<option value="">-- Chọn quận/huyện --</option>');
+            $("#CommuneID").html('<option value="">-- Chọn phường/xã --</option>');
+
+            if (provinceId) {
+                $.getJSON('/Post/GetDistrictsByProvinceId?provinceId=' + provinceId, function (data) {
+                    $.each(data, function (i, district) {
+                        $("#DistrictID").append('<option value="' + district.id + '">' + district.name + '</option>');
+                    });
+                });
+            }
+        });
+
+        // --- Khi chọn quận/huyện ---
+        $("#DistrictID").change(function () {
+            var districtId = $(this).val();
+            $("#CommuneID").html('<option value="">-- Chọn phường/xã --</option>');
+
+            if (districtId) {
+                $.getJSON('/Post/GetCommunesByDistrictId?districtId=' + districtId, function (data) {
+                    $.each(data, function (i, commune) {
+                        $("#CommuneID").append('<option value="' + commune.id + '">' + commune.name + '</option>');
+                    });
+                });
+            }
+        });
+    </script>
+}
