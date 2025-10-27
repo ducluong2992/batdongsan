@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="FILE_SQL\" />
     <Folder Include="wwwroot\images\avt\" />
     <Folder Include="wwwroot\images\projects\" />
   </ItemGroup>
