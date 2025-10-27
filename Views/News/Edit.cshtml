@@ -1,0 +1,30 @@
+﻿@model bds.Models.News
+
+@{
+    ViewData["Title"] = "Sửa tin tức";
+    Layout = ViewData["Layout"]?.ToString() ?? "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2>Sửa tin tức</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="NewsID" />
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label"></label>
+        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
