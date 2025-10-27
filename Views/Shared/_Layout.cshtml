@@ -7,122 +7,237 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RealEstate</title>
+    <title>@ViewData["Title"] - HHL RealEstate</title>
 
-    <!-- CSS chính -->
+    <!-- CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
     <style>
-        /* Navbar */
-        .navbar-light .navbar-nav .nav-link {
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-            .navbar-light .navbar-nav .nav-link:hover {
-                color: #0d6efd;
-            }
-
-        /* Buttons */
-        .btn-success {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-outline-primary {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Dropdown hover effect */
-        .dropdown-menu li a:hover {
+        /* ====== GLOBAL ====== */
+        body {
+            font-family: "Segoe UI", sans-serif;
             background-color: #f8f9fa;
         }
 
-        /* Logo */
-        .logo-img {
-            height: 40px;
+        a {
+            text-decoration: none;
+        }
+
+        /* ====== NAVBAR ====== */
+        .navbar {
+            background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .navbar-brand span {
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            color: white;
+            transition: all 0.25s ease;
+            border-radius: 8px;
+            padding: 8px 14px;
+            position: relative;
+        }
+
+            .navbar-nav .nav-link:hover {
+                color: #ffeb3b;
+            }
+
+            /* ===== GẠCH DƯỚI TRANG ACTIVE ===== */
+            .navbar-nav .nav-link.active {
+                color: #fff !important;
+            }
+
+                .navbar-nav .nav-link.active::after {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 100%;
+                    height: 3px;
+                    background-color: #ffeb3b;
+                    border-radius: 3px;
+                }
+
+        .navbar-toggler {
+            border: none;
+        }
+
+            .navbar-toggler:focus {
+                box-shadow: none;
+            }
+
+        /* ====== BUTTONS ====== */
+        .btn-outline-primary, .btn-success {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+
+        .btn-outline-primary {
+            border-color: #fff;
+            color: #fff;
+        }
+
+            .btn-outline-primary:hover {
+                background-color: #fff;
+                color: #005c99;
+            }
+
+        .btn-success {
+            background-color: #ffeb3b;
+            color: #333;
+            border: none;
+        }
+
+            .btn-success:hover {
+                background-color: #ffe53b;
+                color: #000;
+            }
+
+        /* ====== FOOTER ====== */
+        footer {
+            background-color: #1e1e1e;
+            color: #ccc;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+            footer h5 {
+                color: #fff;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+
+            footer a {
+                color: #ccc;
+                text-decoration: none;
+                transition: color 0.3s;
+            }
+
+                footer a:hover {
+                    color: #0d6efd;
+                }
+
+        .footer-bottom {
+            border-top: 1px solid #444;
+            margin-top: 25px;
+            padding-top: 15px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        /* ====== RESPONSIVE ====== */
+        @@media (max-width: 991px) {
+            .navbar-nav .nav-link {
+                margin: 3px 0;
+            }
         }
     </style>
 </head>
+
 <body>
+    <!-- ===== HEADER ===== -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg shadow-sm"
+             style="background: linear-gradient(90deg, #7ee97a, #005c99, #a3e0f5);">
+            <div class="container-fluid px-4">
                 <!-- Logo -->
                 <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/Logo/HHL2.png" alt="HHL RealEstate" class="logo-img">
-                    <span class="ms-2 fw-bold">HHL RealEstate</span>
+                    <img src="~/images/Logo/HHL2.png" alt="HHL RealEstate"
+                         style="height:40px; margin-right:18px;">
+                    <span class="fw-bold text-white" style="font-size:18px;">HHL RealEstate</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav" aria-controls="navbarNav"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <!-- Left menu -->
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <div class="collapse navbar-collapse justify-content-start" id="navbarNav">
+                    <!-- Menu trái -->
+                    <ul class="navbar-nav fw-semibold me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Trang chủ" ? "active-link" : "")"
+                               asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
-
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
                                 Loại hình
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="LoaiHinh" asp-action="ChungCu">Chung cư</a></li>
-                                <li><a class="dropdown-item" asp-controller="LoaiHinh" asp-action="NhaO">Nhà ở</a></li>
-                                <li><a class="dropdown-item" asp-controller="LoaiHinh" asp-action="DatNen">Đất nền</a></li>
-                                <li><a class="dropdown-item" asp-controller="LoaiHinh" asp-action="BietThu">Biệt thự</a></li>
+
+                            <ul class="dropdown-menu border-0 shadow-sm rounded-3">
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var cat in ViewBag.Categories)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="LoaiHinh"
+                                               asp-action="DanhSach"
+                                               asp-route-id="@cat.CategoryID">
+                                                @cat.CategoryName
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                                else
+                                {
+                                    <li><span class="dropdown-item text-muted">Đang tải...</span></li>
+                                }
                             </ul>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="DuAn" asp-action="Index">Dự án</a>
+                            <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Dự án" ? "active-link" : "")"
+                               asp-controller="Project" asp-action="Index">Dự án</a>
                         </li>
-
                         <li class="nav-item">
+
                             <a class="nav-link" asp-controller="News" asp-action="Index">Tin tức</a>
-                        </li>
 
+                        </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="PhanTichDanhGia" asp-action="Index">Phân tích đánh giá</a>
+                            <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Phân tích đánh giá" ? "active-link" : "")"
+                               asp-controller="PhanTichDanhGia" asp-action="Index">Phân tích & Đánh giá</a>
                         </li>
                     </ul>
 
-                    <!-- Right menu -->
-                    <ul class="navbar-nav align-items-center">
-
+                    <!-- Menu phải -->
+                    <ul class="navbar-nav align-items-center fw-semibold">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <!-- Nút Đăng tin -->
                             <li class="nav-item me-2">
-                                <a class="btn btn-success fw-semibold" asp-controller="Post" asp-action="Index">
-                                    <i class="bi bi-pencil-square"></i> Đăng tin
+                                <a class="btn btn-success fw-semibold px-3" asp-controller="Post" asp-action="Index">
+                                    <i class="bi bi-pencil-square me-1"></i> Đăng tin
                                 </a>
                             </li>
-
-                            <!-- Xin chào + dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle fw-semibold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle me-1"></i> Xin chào, @User.Identity.Name
+                                <a class="nav-link dropdown-toggle text-white d-flex align-items-center"
+                                   href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle me-1"></i> @User.Identity.Name
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Thông tin cá nhân</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="EditPassword">Đổi mật khẩu</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-lines-fill me-2"></i>Thông tin cá nhân</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="EditPassword"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li>
-                                        <a class="dropdown-item text-danger d-flex align-items-center" asp-controller="Account" asp-action="Logout">
+                                        <a class="dropdown-item text-danger d-flex align-items-center"
+                                           asp-controller="Account" asp-action="Logout">
                                             <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
                                         </a>
                                     </li>
@@ -131,14 +246,13 @@
                         }
                         else
                         {
-                            <!-- Guest -->
                             <li class="nav-item me-2">
-                                <a class="btn btn-outline-primary d-flex align-items-center" asp-controller="Account" asp-action="Login">
+                                <a class="btn btn-outline-light fw-semibold px-3" asp-controller="Account" asp-action="Login">
                                     <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-outline-primary d-flex align-items-center" asp-controller="Account" asp-action="Register">
+                                <a class="btn btn-light fw-semibold px-3" asp-controller="Account" asp-action="Register">
                                     <i class="bi bi-pencil-square me-1"></i> Đăng ký
                                 </a>
                             </li>
@@ -149,18 +263,128 @@
         </nav>
     </header>
 
-    <!-- Nội dung chính -->
+    <style>
+        /* ======= NAVBAR STYLE GỌN GÀNG, CHUẨN YÊU CẦU ======= */
+        .navbar-nav .nav-item {
+            margin: 0 6px;
+        }
+
+        .navbar-nav .nav-link {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 1rem;
+            position: relative;
+            transition: all 0.25s ease;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+            /* Hover: chuyển nền sáng nhẹ, không đổi sang xanh */
+            .navbar-nav .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                opacity: 0.95;
+            }
+
+            /* Active (trang hiện tại): có gạch trắng nhỏ ở dưới */
+            .navbar-nav .nav-link.active-link::after {
+                content: "";
+                position: absolute;
+                bottom: -3px;
+                left: 0;
+                height: 2px;
+                width: 100%;
+                background-color: #fff;
+                border-radius: 1px;
+            }
+
+            /* Không hiện gạch khi hover qua item khác */
+            .navbar-nav .nav-link:hover::after {
+                width: 0;
+            }
+
+        /* Dropdown: tinh tế, không xanh */
+        .dropdown-menu {
+            border-radius: 10px;
+            border: none;
+            padding: 10px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            font-weight: 500;
+            color: #333 !important;
+            transition: all 0.2s ease;
+        }
+
+            .dropdown-item:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+                color: #005c99 !important;
+            }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 991px) {
+            .navbar-nav .nav-link {
+                margin: 4px 0;
+            }
+        }
+    </style>
+
+
+    <!-- ===== MAIN CONTENT ===== -->
     <main class="container mt-4">
         @RenderBody()
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center p-3 mt-4">
-        <p>&copy; @DateTime.Now.Year - RealEstate Website</p>
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-4 mb-4">
+                    <h5>Về HHL RealEstate</h5>
+                    <p>HHL RealEstate là nền tảng bất động sản hàng đầu, cung cấp thông tin, phân tích và đánh giá chi tiết các dự án nhà ở, đất nền, biệt thự, chung cư...</p>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <h5>Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> Group_09 - CNTT3 - K63 - UTC</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@hhlrealestate.vn</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> 0912 345 999</li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <h5>Kết nối với chúng tôi</h5>
+                    <a href="#" class="me-3"><i class="bi bi-facebook fs-4"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-instagram fs-4"></i></a>
+                    <a href="#"><i class="bi bi-youtube fs-4"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-bottom text-center">
+                © @DateTime.Now.Year HHL RealEstate.
+            </div>
+        </div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,205 @@
+﻿@model bds.Models.Project
+@{
+    ViewData["Title"] = "Đăng dự án mới";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top-4">
+            <h4 class="mb-0"><i class="bi bi-building"></i> Đăng dự án mới</h4>
+            <a asp-action="Index" asp-controller="Project" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="card-body p-4">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success text-center fw-semibold shadow-sm rounded-pill" role="alert">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="mt-3">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Tên dự án -->
+                <div class="mb-3">
+                    <label asp-for="ProjectName" class="form-label fw-semibold">Tên dự án</label>
+                    <input asp-for="ProjectName" class="form-control form-control-lg" placeholder="Nhập tên dự án..." />
+                    <span asp-validation-for="ProjectName" class="text-danger"></span>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="mb-3">
+                    <label for="Description" class="form-label fw-semibold">Mô tả chi tiết dự án</label>
+                    <textarea asp-for="Description" class="form-control" id="editor" rows="6" placeholder="Nhập mô tả chi tiết..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- ✅ CKEditor 5 -->
+                <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+                <script>
+                    ClassicEditor
+                        .create(document.querySelector('#editor'), {
+                            toolbar: [
+                                'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+                                '|', 'blockQuote', 'insertTable', 'undo', 'redo'
+                            ],
+                            heading: {
+                                options: [
+                                    { model: 'paragraph', title: 'Đoạn văn', class: 'ck-heading_paragraph' },
+                                    { model: 'heading1', view: 'h2', title: 'Tiêu đề 1', class: 'ck-heading_heading1' },
+                                    { model: 'heading2', view: 'h3', title: 'Tiêu đề 2', class: 'ck-heading_heading2' }
+                                ]
+                            }
+                        })
+                        .catch(error => console.error(error));
+                </script>
+
+                <!-- Địa chỉ -->
+                <div class="mb-3">
+                    <label asp-for="Location" class="form-label fw-semibold">Địa chỉ (số nhà, tên đường)</label>
+                    <input asp-for="Location" class="form-control" placeholder="VD: 123 Nguyễn Trãi..." />
+                    <span asp-validation-for="Location" class="text-danger"></span>
+                </div>
+
+                <!-- Khu vực hành chính -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Tỉnh/Thành phố</label>
+                        <select id="ProvinceDropdown" class="form-select" asp-items="ViewBag.ProvinceList">
+                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Quận/Huyện</label>
+                        <select id="DistrictDropdown" class="form-select">
+                            <option value="">-- Chọn Tỉnh/Thành phố trước --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="CommuneID" class="form-label fw-semibold">Phường/Xã</label>
+                        <select asp-for="CommuneID" id="CommuneDropdown" class="form-select">
+                            <option value="">-- Chọn Quận/Huyện trước --</option>
+                        </select>
+                        <span asp-validation-for="CommuneID" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Diện tích & Ngày -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Area" class="form-label fw-semibold">Diện tích (m²)</label>
+                        <input asp-for="Area" class="form-control" type="number" placeholder="Nhập diện tích..." />
+                        <span asp-validation-for="Area" class="text-danger"></span>
+
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="StartDate" class="form-label fw-semibold">Ngày bắt đầu</label>
+                        <input asp-for="StartDate" class="form-control" type="date" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="EndDate" class="form-label fw-semibold">Ngày kết thúc</label>
+                        <input asp-for="EndDate" class="form-control" type="date" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+
+                    </div>
+                </div>
+
+                <!-- Hình ảnh -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Hình ảnh dự án</label>
+                    <input type="file" name="images" class="form-control" multiple accept="image/*" />
+                    <div class="form-text">Chọn 1 ảnh làm ảnh đại diện</div>
+                </div>
+
+                <!-- Nút đăng -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                        <i class="bi bi-cloud-upload"></i> Đăng dự án (Chờ duyệt)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // --- Khi chọn TỈNH ---
+            $("#ProvinceDropdown").change(function () {
+                var provinceId = $(this).val();
+                var districtDropdown = $("#DistrictDropdown");
+                var communeDropdown = $("#CommuneDropdown");
+
+                districtDropdown.empty();
+                communeDropdown.empty();
+                communeDropdown.append('<option value="">-- Vui lòng chọn Quận/Huyện trước --</option>');
+
+                if (provinceId) {
+                    districtDropdown.append('<option>Đang tải...</option>');
+                    $.getJSON('/Project/GetDistrictsByProvinceId', { provinceId: provinceId }, function (data) {
+                        districtDropdown.empty();
+                        districtDropdown.append('<option value="">-- Chọn Quận/Huyện --</option>');
+                        $.each(data, function (i, d) {
+                            districtDropdown.append(`<option value="${d.id}">${d.name}</option>`);
+                        });
+                    }).fail(function () {
+                        districtDropdown.empty();
+                        districtDropdown.append('<option value="">(Không tải được dữ liệu)</option>');
+                    });
+                } else {
+                    districtDropdown.append('<option value="">-- Vui lòng chọn Tỉnh/Thành phố --</option>');
+                }
+            });
+
+            // --- Khi chọn QUẬN ---
+            $("#DistrictDropdown").change(function () {
+                var districtId = $(this).val();
+                var communeDropdown = $("#CommuneDropdown");
+
+                communeDropdown.empty();
+
+                if (districtId) {
+                    communeDropdown.append('<option>Đang tải...</option>');
+                    $.getJSON('/Project/GetCommunesByDistrictId', { districtId: districtId }, function (data) {
+                        communeDropdown.empty();
+                        communeDropdown.append('<option value="">-- Chọn Phường/Xã --</option>');
+                        $.each(data, function (i, c) {
+                            communeDropdown.append(`<option value="${c.id}">${c.name}</option>`);
+                        });
+                    }).fail(function () {
+                        communeDropdown.empty();
+                        communeDropdown.append('<option value="">(Không tải được dữ liệu)</option>');
+                    });
+                } else {
+                    communeDropdown.append('<option value="">-- Vui lòng chọn Quận/Huyện --</option>');
+                }
+            });
+
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                alert.classList.add('fade');
+                alert.addEventListener('transitionend', () => alert.remove());
+            }
+        }, 3000); // 3 giây
+        });
+
+        
+
+    </script>
+}
+
+
+

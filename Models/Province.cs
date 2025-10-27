@@ -9,7 +9,7 @@ namespace bds.Models
         public string ProvinceName { get; set; } = string.Empty;
 
         //  Quan hệ
-        public ICollection<CommuneWard>? CommuneWards { get; set; }
+        public ICollection<District>? Districts { get; set; }
         public ICollection<Statistic>? Statistics { get; set; }
     }
 }
