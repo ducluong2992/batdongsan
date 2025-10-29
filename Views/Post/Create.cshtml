@@ -30,9 +30,41 @@
     </div>
 
     <div class="form-group mb-3">
-        <label asp-for="Price">Giá</label>
-        <input asp-for="Price" class="form-control" type="number" step="0.01" />
+        <label asp-for="Price">Giá bán</label>
+        <div class="input-group">
+            <input asp-for="Price" id="Price" class="form-control" placeholder="Nhập giá..." />
+            <span class="input-group-text">VNĐ</span>
+        </div>
+        <small class="text-muted">Ví dụ: 3.500.000.000 (3,5 tỷ)</small>
     </div>
+
+    <script>
+        const priceInput = document.getElementById('Price');
+
+        // Định dạng hiển thị khi nhập
+        priceInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, "");
+            if (value) {
+                e.target.value = Number(value).toLocaleString('vi-VN');
+            } else {
+                e.target.value = "";
+            }
+        });
+
+        // Khi người dùng bấm submit
+        document.querySelector('form').addEventListener('submit', function (e) {
+            // Trước khi submit, xóa hết ký tự không phải số
+            let raw = priceInput.value.replace(/\D/g, '');
+            if (!raw) {
+                alert("Vui lòng nhập giá hợp lệ!");
+                e.preventDefault(); // chặn submit
+                return;
+            }
+            priceInput.value = raw; // gán lại giá trị thuần số
+        });
+    </script>
+
+
 
     <!-- 🔹 CHỌN VỊ TRÍ (TỈNH / HUYỆN / XÃ) -->
     <div class="form-group mb-3">
@@ -68,13 +100,94 @@
 
     <div class="form-group mb-3">
         <label asp-for="Area">Diện tích</label>
-        <input asp-for="Area" class="form-control" />
+        <div class="input-group">
+            <input asp-for="Area" class="form-control" type="number" step="0.1" min="0" placeholder="Ví dụ: 100" />
+            <span class="input-group-text">m²</span>
+        </div>
     </div>
 
+
     <div class="form-group mb-3">
-        <label for="images">Ảnh bài đăng (nhiều ảnh)</label>
-        <input type="file" name="images" multiple class="form-control" />
+        <label class="form-label fw-semibold">Ảnh bài đăng</label>
+
+        <!-- 🔹 Khu vực kéo-thả -->
+        <div id="dropZone"
+             class="border border-2 border-secondary-subtle rounded p-4 text-center bg-light"
+             style="cursor:pointer;">
+            <i class="bi bi-cloud-arrow-up fs-1 text-secondary"></i>
+            <p class="mb-0 text-muted">Kéo & thả ảnh vào đây hoặc bấm để chọn ảnh</p>
+            <input type="file" id="imageInput" name="images" multiple accept="image/*"
+                   style="display:none;" />
+        </div>
+
+        <!-- 🔹 Preview ảnh -->
+        <div id="previewContainer" class="mt-3 d-flex flex-wrap gap-2"></div>
     </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        let selectedFiles = [];
+
+        // Khi click vào vùng kéo-thả => mở hộp chọn file
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Khi chọn file từ hộp chọn
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        // --- Kéo ảnh vào vùng upload ---
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-primary', 'bg-white');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            dropZone.classList.remove('border-primary', 'bg-white');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary', 'bg-white');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // --- Xử lý danh sách file & hiển thị preview ---
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                selectedFiles.push(file);
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('position-relative');
+                    wrapper.innerHTML = `
+                            <img src="${event.target.result}"
+                                 style="width:120px;height:120px;object-fit:cover;border-radius:8px;box-shadow:0 0 4px rgba(0,0,0,0.2);">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                    style="border-radius:50%;padding:2px 6px;transform:translate(30%,-30%)">×</button>
+                        `;
+                    wrapper.querySelector('button').addEventListener('click', () => {
+                        selectedFiles = selectedFiles.filter(f => f !== file);
+                        wrapper.remove();
+                    });
+                    previewContainer.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            fileInput.value = ""; // reset input
+        }
+
+        // --- Khi submit form: thêm tất cả file vào input thật ---
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(f => dataTransfer.items.add(f));
+            fileInput.files = dataTransfer.files;
+        });
+    </script>
+
+
+
 
     <button type="submit" class="btn btn-primary">Đăng bài</button>
 </form>
@@ -92,7 +205,7 @@
             if (provinceId) {
                 $.getJSON('/Post/GetDistrictsByProvinceId?provinceId=' + provinceId, function (data) {
                     $.each(data, function (i, district) {
-                        $("#DistrictID").append('<option value="' + district.id + '">' + district.name + '</option>');
+                        $("#DistrictID").append('<option value="' + district.districtID + '">' + district.districtName + '</option>');
                     });
                 });
             }
@@ -106,10 +219,11 @@
             if (districtId) {
                 $.getJSON('/Post/GetCommunesByDistrictId?districtId=' + districtId, function (data) {
                     $.each(data, function (i, commune) {
-                        $("#CommuneID").append('<option value="' + commune.id + '">' + commune.name + '</option>');
+                        $("#CommuneID").append('<option value="' + commune.communeID + '">' + commune.communeName + '</option>');
                     });
                 });
             }
         });
     </script>
 }
+

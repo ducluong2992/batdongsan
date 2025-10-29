@@ -128,7 +128,7 @@ namespace bds.Controllers
         {
             var districts = await _context.Districts
                 .Where(d => d.ProvinceID == provinceId)
-                .Select(d => new { id = d.DistrictID, name = d.DistrictName })
+                .Select(d => new { districtID = d.DistrictID, districtName = d.DistrictName })
                 .ToListAsync();
             return Json(districts);
         }
@@ -139,9 +139,167 @@ namespace bds.Controllers
         {
             var communes = await _context.CommuneWards
                 .Where(c => c.DistrictID == districtId)
-                .Select(c => new { id = c.CommuneID, name = c.CommuneName })
+                .Select(c => new { communeID = c.CommuneID, communeName = c.CommuneName })
                 .ToListAsync();
             return Json(communes);
         }
+
+
+        // --- 7. QUẢN LÝ TIN CỦA TÔI ---
+        [Authorize]
+        public async Task<IActionResult> MyPosts()
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var myPosts = await _context.Posts
+                .Where(p => p.UserID == currentUserId)
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.Category)
+                .Include(p => p.CommuneWard.District.Province)
+                .OrderByDescending(p => p.CreateAt)
+                .ToListAsync();
+
+            return View(myPosts);
+        }
+
+        [HttpGet("/api/Location/GetFullAddress")]
+        public IActionResult GetFullAddress(int communeId)
+        {
+            var commune = _context.CommuneWards
+                .Include(c => c.District)
+                .ThenInclude(d => d.Province)
+                .FirstOrDefault(c => c.CommuneID == communeId);
+
+            if (commune == null)
+                return NotFound();
+
+            return Json(new
+            {
+                provinceID = commune.District?.Province?.ProvinceID,
+                districtID = commune.District?.DistrictID,
+                communeID = commune.CommuneID
+            });
+        }
+
+
+
+
+        // --- 8. SỬA BÀI ĐĂNG ---
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var post = await _context.Posts
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.PostID == id && p.UserID == currentUserId);
+
+            if (post == null)
+                return NotFound();
+
+            ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", post.CategoryID);
+            ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
+            ViewData["ProvinceList"] = _context.Provinces.ToList();
+
+
+            return View(post);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("PostID,Title,Description,Location,Area,Price,CommuneID,CategoryID")] Post model, List<IFormFile>? newImages)
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var existingPost = await _context.Posts.Include(p => p.Images).FirstOrDefaultAsync(p => p.PostID == id && p.UserID == currentUserId);
+
+            if (existingPost == null)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", model.CategoryID);
+                ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
+                return View(model);
+            }
+
+            // Cập nhật thông tin
+            existingPost.Title = model.Title;
+            existingPost.Description = model.Description;
+            existingPost.Location = model.Location;
+            existingPost.Area = model.Area;
+            existingPost.Price = model.Price;
+            existingPost.CategoryID = model.CategoryID;
+            existingPost.CommuneID = model.CommuneID;
+            existingPost.Status = "Chờ duyệt"; // sau khi sửa thì quay lại chờ duyệt
+            existingPost.CreateAt = DateTime.Now;
+
+            // Thêm ảnh mới nếu có
+            if (newImages != null && newImages.Count > 0)
+            {
+                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "posts");
+                if (!Directory.Exists(uploadDir))
+                    Directory.CreateDirectory(uploadDir);
+
+                foreach (var imageFile in newImages)
+                {
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(imageFile.FileName);
+                    string filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    var img = new Image
+                    {
+                        ImageUrl = "/images/posts/" + uniqueFileName,
+                        PostID = existingPost.PostID
+                    };
+                    _context.Images.Add(img);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Bài đăng đã được cập nhật và gửi lại để duyệt.";
+
+            return RedirectToAction(nameof(MyPosts));
+        }
+
+        // --- 9. XÓA BÀI ĐĂNG ---
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var post = await _context.Posts
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.PostID == id && p.UserID == currentUserId);
+
+            if (post == null)
+                return NotFound();
+
+            // Xóa file ảnh vật lý
+            if (post.Images != null)
+            {
+                foreach (var img in post.Images)
+                {
+                    var path = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(path))
+                        System.IO.File.Delete(path);
+                }
+            }
+
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Bài đăng đã được xóa thành công!";
+            return RedirectToAction(nameof(MyPosts));
+        }
+
     }
 }

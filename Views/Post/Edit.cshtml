@@ -1,0 +1,173 @@
+﻿@model bds.Models.Post
+@{
+    ViewData["Title"] = "Chỉnh sửa bài đăng";
+}
+
+<div class="container mt-4">
+    <h3 class="mb-4">Chỉnh sửa bài đăng</h3>
+
+    <form asp-action="Edit" enctype="multipart/form-data" method="post">
+        <input type="hidden" asp-for="PostID" />
+
+        <!-- Tiêu đề -->
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <!-- Mô tả -->
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Mô tả</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <!-- 🗺️ CHỌN VỊ TRÍ -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Tỉnh/Thành phố</label>
+                <select id="province" class="form-select">
+                    <option value="">-- Chọn tỉnh/thành --</option>
+                    @foreach (var province in (IEnumerable<bds.Models.Province>)ViewBag.ProvinceList)
+                    {
+                        <option value="@province.ProvinceID">@province.ProvinceName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quận/Huyện</label>
+                <select id="district" class="form-select">
+                    <option value="">-- Chọn quận/huyện --</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Xã/Phường</label>
+                <select asp-for="CommuneID" id="commune" class="form-select">
+                    <option value="">-- Chọn xã/phường --</option>
+                </select>
+                <span asp-validation-for="CommuneID" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Địa chỉ chi tiết -->
+        <div class="mb-3">
+            <label asp-for="Location" class="form-label">Địa chỉ chi tiết</label>
+            <input asp-for="Location" class="form-control" placeholder="VD: 12 Nguyễn Trãi, phường X, quận Y..." />
+        </div>
+
+        <!-- Diện tích & Giá -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Area" class="form-label">Diện tích (m²)</label>
+                <input asp-for="Area" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Price" class="form-label">Giá (VNĐ)</label>
+                <input asp-for="Price" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Loại hình -->
+        <div class="mb-3">
+            <label asp-for="CategoryID" class="form-label">Loại hình</label>
+            <select asp-for="CategoryID" class="form-select" asp-items="ViewBag.CategoryList">
+                <option value="">-- Chọn loại hình --</option>
+            </select>
+        </div>
+
+        <!-- Ảnh -->
+        <div class="mb-3">
+            <label class="form-label">Ảnh hiện có:</label><br />
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                foreach (var img in Model.Images)
+                {
+                    <img src="@img.ImageUrl" width="120" class="rounded m-1 border" />
+                }
+            }
+            else
+            {
+                <span class="text-muted">Chưa có ảnh nào.</span>
+            }
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Thêm ảnh mới:</label>
+            <input type="file" name="newImages" multiple class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+        <a asp-action="MyPosts" class="btn btn-secondary ms-2">Quay lại</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // ====== LẤY ID CỦA ĐỊA CHỈ CŨ ======
+        var currentCommuneId = '@Model.CommuneID';
+        var selectedDistrictId = '';
+        var selectedProvinceId = '';
+
+        // Khi trang tải xong, lấy thông tin vị trí cũ
+        $(document).ready(function () {
+            if (currentCommuneId) {
+                // Gọi API lấy thông tin xã/phường
+                $.get('/api/Location/GetFullAddress', { communeId: currentCommuneId }, function (data) {
+                    selectedProvinceId = data.provinceID;
+                    selectedDistrictId = data.districtID;
+
+                    // Chọn tỉnh
+                    $('#province').val(selectedProvinceId);
+
+                    // Load huyện theo tỉnh
+                    $.get('/Post/GetDistrictsByProvinceId', { provinceId: selectedProvinceId }, function (districts) {
+                        $('#district').empty().append('<option value="">-- Chọn quận/huyện --</option>');
+                        $.each(districts, function (i, d) {
+                            $('#district').append('<option value="' + d.districtID + '">' + d.districtName + '</option>');
+                        });
+                        $('#district').val(selectedDistrictId);
+
+                        // Load xã theo huyện
+                        $.get('/Post/GetCommunesByDistrictId', { districtId: selectedDistrictId }, function (communes) {
+                            $('#commune').empty().append('<option value="">-- Chọn xã/phường --</option>');
+                            $.each(communes, function (i, c) {
+                                $('#commune').append('<option value="' + c.communeID + '">' + c.communeName + '</option>');
+                            });
+                            $('#commune').val(currentCommuneId);
+                        });
+                    });
+                });
+            }
+        });
+
+        // ====== CHỌN TỈNH -> HUYỆN ======
+        $('#province').on('change', function () {
+            var provinceId = $(this).val();
+            $('#district').empty().append('<option value="">-- Chọn quận/huyện --</option>');
+            $('#commune').empty().append('<option value="">-- Chọn xã/phường --</option>');
+
+            if (provinceId) {
+                $.get('/Post/GetDistrictsByProvinceId', { provinceId: provinceId }, function (data) {
+                    $.each(data, function (i, d) {
+                        $('#district').append('<option value="' + d.districtID + '">' + d.districtName + '</option>');
+                    });
+                });
+            }
+        });
+
+        // ====== CHỌN HUYỆN -> XÃ ======
+        $('#district').on('change', function () {
+            var districtId = $(this).val();
+            $('#commune').empty().append('<option value="">-- Chọn xã/phường --</option>');
+            if (districtId) {
+                $.get('/Post/GetCommunesByDistrictId', { districtId: districtId }, function (data) {
+                    $.each(data, function (i, c) {
+                        $('#commune').append('<option value="' + c.communeID + '">' + c.communeName + '</option>');
+                    });
+                });
+            }
+        });
+    </script>
+}

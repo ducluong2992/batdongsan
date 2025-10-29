@@ -29,6 +29,8 @@ namespace bds.Models
         public string? Status { get; set; }
 
         public DateTime CreateAt { get; set; } = DateTime.Now;
+        [StringLength(255)]
+        public string? RejectReason { get; set; }
 
         // --- KHÓA NGOẠI ---
         [ForeignKey(nameof(User))]
