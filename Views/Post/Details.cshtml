@@ -3,47 +3,89 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="container mt-4">
-    <h2>@Model.Title</h2>
-
-    <div class="mb-3 text-muted">
-        <i class="bi bi-calendar"></i> Đăng ngày: @Model.CreateAt.ToString("dd/MM/yyyy")
-        <span class="ms-3"><i class="bi bi-eye"></i> @Model.ClickCount lượt xem</span>
-    </div>
-
-    <div class="mb-4">
-        @if (Model.Images != null && Model.Images.Any())
-        {
-            <div id="carouselPostImages" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    @for (int i = 0; i < Model.Images.Count; i++)
-                    {
-                        var img = Model.Images.ElementAt(i);
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <img src="@img.ImageUrl" class="d-block w-100" style="max-height:400px;object-fit:cover;" />
-                        </div>
-                    }
+<div class="container mt-5">
+    <div class="row">
+        <!-- Cột ảnh -->
+        <div class="col-md-7">
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div id="carouselPostImages" class="carousel slide rounded shadow-sm" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded">
+                        @for (int i = 0; i < Model.Images.Count; i++)
+                        {
+                            var img = Model.Images.ElementAt(i);
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@img.ImageUrl" class="d-block w-100" style="height:400px; object-fit:cover;" />
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPostImages" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPostImages" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselPostImages" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselPostImages" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+            }
+            else
+            {
+                <img src="/images/no-image.png" class="img-fluid rounded shadow-sm" style="height:400px; object-fit:cover;" />
+            }
+        </div>
+
+        <!-- Cột thông tin -->
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <h3 class="fw-bold text-primary mb-3">@Model.Title</h3>
+
+                <div class="text-muted mb-3 small">
+                    <i class="bi bi-calendar"></i> @Model.CreateAt.ToString("dd/MM/yyyy")
+                    <span class="ms-3"><i class="bi bi-eye"></i> @Model.ClickCount lượt xem</span>
+                </div>
+
+                <div class="mb-3">
+                    <span class="badge bg-success fs-6">@Model.Status</span>
+                </div>
+
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-2"><i class="bi bi-geo-alt text-danger"></i> <b>Địa chỉ:</b> @Model.Location</li>
+                    <li class="mb-2">
+                        <i class="bi bi-cash-stack text-success"></i>
+                        <b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-rulers text-primary"></i>
+                        <b>Diện tích:</b> @(Model.Area ?? 0) m²
+                    </li>
+                </ul>
+
+                <a asp-action="Index" class="btn btn-outline-secondary w-100 rounded-pill">
+                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                </a>
             </div>
-        }
+        </div>
     </div>
 
-    <h5>Thông tin chi tiết</h5>
-    <ul>
-        <li><b>Địa chỉ:</b> @Model.Location</li>
-        <li><b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ</li>
-        <li><b>Diện tích:</b> @(Model.Area ?? 0) m²</li>
-        <li><b>Trạng thái:</b> @Model.Status</li>
-    </ul>
-
-    <h5 class="mt-4">Mô tả</h5>
-    <p>@Html.Raw(Model.Description?.Replace("\n", "<br>"))</p>
-
-    <a asp-action="Index" class="btn btn-secondary mt-3">Quay lại danh sách</a>
+    <!-- Mô tả -->
+    <div class="mt-5">
+        <h4 class="fw-semibold mb-3 text-dark">Mô tả chi tiết</h4>
+        <div class="bg-light p-4 rounded shadow-sm" style="line-height:1.7;">
+            @Html.Raw(Model.Description?.Replace("\n", "<br>"))
+        </div>
+    </div>
 </div>
+
+<style>
+    .carousel-inner img {
+        border-radius: 8px;
+    }
+
+    .card ul li i {
+        width: 20px;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        transition: 0.2s;
+    }
+</style>
