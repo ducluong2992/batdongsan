@@ -20,7 +20,7 @@ namespace bds.Models
         public DateTime CreateAt { get; set; } = DateTime.Now;
         public int? RoleID { get; set; }
         public bool IsSuperAdmin { get; set; } = false;      //IsSuperAdmin = 1 : chủ trang web
-
+        public bool IsLocked { get; set; } = false; 
         //QUan he
         public Role? Role { get; set; }
         public ICollection<Post>? Posts { get; set; }

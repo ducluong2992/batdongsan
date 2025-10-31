@@ -60,9 +60,11 @@ namespace bds.Models
         [Required(ErrorMessage = "Vui lòng chọn Phường/Xã")]
         [Display(Name = "Phường/Xã")]
         public int? CommuneID { get; set; }
-
+        public string? RejectReason { get; set; }
         // --- Navigation Properties ---
         public virtual User? User { get; set; }
+
+        [ForeignKey("CommuneID")]
         public virtual CommuneWard? CommuneWard { get; set; }
 
         // Một dự án có nhiều ảnh

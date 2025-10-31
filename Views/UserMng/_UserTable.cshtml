@@ -10,6 +10,7 @@
                 <th>Email</th>
                 <th>Số điện thoại</th>
                 <th>Ngày tạo</th>
+                <th>Trạng thái</th> 
                 <th class="text-center">Thao tác</th>
             </tr>
         </thead>
@@ -22,12 +23,23 @@
                     <td>@user.Email</td>
                     <td>@user.Phone</td>
                     <td>@user.CreateAt.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @if (user.IsLocked)
+                        {
+                            <span class="badge bg-danger">Bị khóa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Hoạt động</span>
+                        }
+                    </td>
                     <td class="text-center">
-                        <form asp-controller="UserMng" asp-action="DeleteUser" method="post" class="d-inline"
-                              onsubmit="return confirm('Xác nhận xóa người dùng này?')">
+                        <form asp-controller="UserMng" asp-action="ToggleLockUser" method="post" class="d-inline"
+                              onsubmit="return confirm('Xác nhận thao tác này?')">
                             <input type="hidden" name="id" value="@user.UserID" />
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i> Xóa
+                            <button type="submit" class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-warning")">
+                                <i class="bi @(user.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+                                @(user.IsLocked ? "Mở khóa" : "Khóa")
                             </button>
                         </form>
                     </td>

@@ -1,71 +1,145 @@
 ﻿@{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewData["Title"] = "Trang quản trị - RealEstate";
+    ViewData["Title"] = "Bảng điều khiển - RealEstate";
 }
 
-<div class="container-fluid">
-    <main class="px-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2>Bảng điều khiển quản trị</h2>
-        </div>
+<div class="container-fluid px-4 mt-4">
+    <h2 class="fw-bold text-black mb-4">
+        <i class="bi bi-speedometer2"></i> BẢNG ĐIỀU KHIỂN TỔNG QUAN
+    </h2>
 
-        <div class="row text-center">
-            <div class="col-md-4 mb-3">
-                <div class="card border-primary">
-                    <div class="card-body">
-                        <h5 class="card-title">Bài đăng chờ duyệt</h5>
-                        <p class="card-text display-6 text-primary">12</p>
-                        <a asp-controller="BaiDang" asp-action="ChoDuyet" class="btn btn-primary">Xem chi tiết</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="card border-success">
-                    <div class="card-body">
-                        <h5 class="card-title">Bài đăng đã duyệt</h5>
-                        <p class="card-text display-6 text-success">84</p>
-                        <a asp-controller="BaiDang" asp-action="DaDuyet" class="btn btn-success">Xem chi tiết</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="card border-warning">
-                    <div class="card-body">
-                        <h5 class="card-title">Tài khoản người dùng</h5>
-                        <p class="card-text display-6 text-warning">56</p>
-                        <a asp-controller="TaiKhoan" asp-action="Index" class="btn btn-warning">Quản lý</a>
-                    </div>
+    <!-- ==== THỐNG KÊ TỔNG QUAN ==== -->
+    <div class="row text-center mb-5" id="statsContainer">
+        <div class="col-md-4 mb-3">
+            <div class="card border-warning shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-hourglass-split text-warning" style="font-size:2rem"></i>
+                    <h6 class="text-muted mt-2">Bài đăng chờ duyệt</h6>
+                    <h3 id="pendingCount" class="fw-bold text-warning">0</h3>
+                    <a href="#" id="pendingDetail" class="btn btn-outline-warning btn-sm mt-2">Xem chi tiết</a>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4">
-            <h4>Thống kê hoạt động</h4>
-            <canvas id="chartThongKe" height="100"></canvas>
+        <div class="col-md-4 mb-3">
+            <div class="card border-success shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-success" style="font-size:2rem"></i>
+                    <h6 class="text-muted mt-2">Bài đăng đã duyệt / từ chối</h6>
+                    <h3 id="approvedCount" class="fw-bold text-success">0</h3>
+                    <a href="#" id="approvedDetail" class="btn btn-outline-success btn-sm mt-2">Xem chi tiết</a>
+                </div>
+            </div>
         </div>
-    </main>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-primary shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-people-fill text-primary" style="font-size:2rem"></i>
+                    <h6 class="text-muted mt-2">Tổng tài khoản người dùng</h6>
+                    <h3 id="userCount" class="fw-bold text-primary">0</h3>
+                    <a href="#" id="userDetail" class="btn btn-outline-primary btn-sm mt-2">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==== BIỂU ĐỒ GIÁ TRỊ TRUNG BÌNH THEO TỈNH ==== -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header fw-bold text-primary">
+            <i class="bi bi-graph-up"></i> Biểu đồ giá trung bình đất theo tỉnh
+        </div>
+        <div class="card-body">
+            <canvas id="avgPriceChart" height="100"></canvas>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('chartThongKe');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Bài đăng', 'Tài khoản', 'Tin tức', 'Báo cáo'],
-                datasets: [{
-                    label: 'Số lượng',
-                    data: [84, 56, 10, 5],
-                    borderWidth: 1,
-                    backgroundColor: ['#007bff', '#ffc107', '#28a745', '#17a2b8']
-                }]
-            },
-            options: {
-                scales: { y: { beginAtZero: true } }
+        async function loadStatistics() {
+            const endpoints = [
+                '/AdminStatistics/PendingPostsCount',
+                '/AdminStatistics/ApprovedOrRejectedPostsCount',
+                '/AdminStatistics/UserAccountsCount'
+            ];
+
+            try {
+                const [pending, approved, users] = await Promise.all(
+                    endpoints.map(url => fetch(url).then(r => r.json()))
+                );
+
+                document.getElementById('pendingCount').innerText = pending.count ?? pending.Count;
+                document.getElementById('pendingDetail').href = pending.detailUrl ?? "#";
+
+                document.getElementById('approvedCount').innerText = approved.count ?? approved.Count;
+                document.getElementById('approvedDetail').href = approved.detailUrl ?? "#";
+
+                document.getElementById('userCount').innerText = users.count ?? users.Count;
+                document.getElementById('userDetail').href = users.detailUrl ?? "#";
+            } catch (error) {
+                console.error("Lỗi tải thống kê:", error);
             }
-        });
+        }
+
+        // === Vẽ biểu đồ đường giá trung bình theo tỉnh ===
+        async function loadAveragePriceChart() {
+            try {
+                const res = await fetch('/AdminStatistics/AveragePriceByProvince');
+                const data = await res.json();
+
+                const provinces = data.map(x => x.province ?? x.Province);
+                const prices = data.map(x => x.averagePrice ?? x.AveragePrice);
+
+                const ctx = document.getElementById('avgPriceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: provinces,
+                        datasets: [{
+                            label: 'Giá trung bình (VNĐ)',
+                            data: prices,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0,123,255,0.2)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.formattedValue.toLocaleString('vi-VN') + " VNĐ"
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: value => value.toLocaleString('vi-VN')
+                                },
+                                title: { display: true, text: 'Giá trung bình (VNĐ)' }
+                            },
+                            x: {
+                                title: { display: true, text: 'Tỉnh / Thành phố' }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Lỗi tải biểu đồ giá:", error);
+            }
+        }
+
+        // === Gọi khi load trang ===
+        loadStatistics();
+        loadAveragePriceChart();
     </script>
 }

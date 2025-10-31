@@ -18,8 +18,9 @@ namespace bds.Data
         public DbSet<CommuneWard> CommuneWards { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Statistic> Statistics { get; set; }
+        public DbSet<Log> Logs { get; set; }
 
-      
+
 
         // --- THÊM PHƯƠNG THỨC NÀY ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -39,6 +40,7 @@ namespace bds.Data
             modelBuilder.Entity<SearchHistory>().ToTable("SearchHistory");
             modelBuilder.Entity<Image>().ToTable("Images");
             modelBuilder.Entity<Statistic>().ToTable("Statistic");
+            modelBuilder.Entity<Log>().ToTable("tblLog");
         }
     
     }
