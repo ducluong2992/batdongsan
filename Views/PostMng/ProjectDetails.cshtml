@@ -1,0 +1,115 @@
+﻿@model bds.Models.Project
+
+@{
+    ViewData["Title"] = Model.ProjectName;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <!-- Chi tiết Project -->
+        <div class="col-lg-8 col-md-12">
+            <a asp-action="Pending" asp-controller="PostMng" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+
+            <!-- Card tổng thể -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h2 class="card-title fw-bold mb-3">@Model.ProjectName</h2>
+
+                    <!-- Thông tin chung -->
+                    <p class="text-muted mb-1">
+                        <strong>📍 Vị trí:</strong>
+                        @Model.Location,
+                        @Model.CommuneWard?.CommuneName,
+                        @Model.CommuneWard?.District?.DistrictName,
+                        @Model.CommuneWard?.District?.Province?.ProvinceName
+                    </p>
+
+                    <p class="text-muted mb-1">
+                        <strong>👤 Người đăng:</strong> @Model.User?.FullName
+                        <span class="ms-3"><strong>📅 Ngày đăng:</strong> @Model.CreateAt.ToString("dd/MM/yyyy")</span>
+                    </p>
+
+                    <p class="text-muted mb-3">
+                        <strong>⚙️ Trạng thái:</strong> @Model.Status |
+                        <strong>👁️ Lượt xem:</strong> @Model.ClickCount
+                    </p>
+
+                    <hr />
+
+                    <!-- Carousel ảnh -->
+                    @if (Model.Images != null && Model.Images.Any())
+                    {
+                        <div id="projectCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                            <div class="carousel-inner rounded">
+                                @foreach (var image in Model.Images.Select((value, i) => new { i, value }))
+                                {
+                                    <div class="carousel-item @(image.i == 0 ? "active" : "")">
+                                        <img src="@Url.Content(image.value.ImageUrl)" class="d-block w-100"
+                                             style="height: 400px; object-fit: cover;" alt="Ảnh dự án">
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Mô tả chi tiết -->
+                    <h4 class="fw-bold mb-3">📝 Mô tả chi tiết</h4>
+                    <div class="p-3 bg-light rounded shadow-sm mb-4">
+                        @Html.Raw(Model.Description)
+                    </div>
+                    <!-- Nút hành động -->
+                    <div class="d-flex gap-2">
+                        <form method="post" asp-action="ApproveProject" asp-controller="PostMng">
+                            <input type="hidden" name="id" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Duyệt
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="bi bi-x-circle"></i> Không duyệt
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="RejectProject" asp-controller="PostMng">
+                <input type="hidden" name="id" value="@Model.ProjectID" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Chọn lý do từ chối Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <select class="form-select" name="reason" required>
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="Nội dung không hợp lệ">Nội dung không hợp lệ</option>
+                        <option value="Thiếu thông tin">Thiếu thông tin</option>
+                        <option value="Trùng bài đăng">Trùng bài đăng</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

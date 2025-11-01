@@ -1,0 +1,303 @@
+﻿@{
+    ViewData["Title"] = "Thống kê hệ thống";
+}
+
+<h2 class="mb-4 text-primary fw-bold text-center">
+    <i class="bi bi-bar-chart-line-fill me-2"></i> THỐNG KÊ BÀI ĐĂNG
+</h2>
+
+<div class="container-fluid">
+
+    <!-- ===== Phần 1: Tỉ lệ duyệt bài ===== -->
+    <h4 class="mb-3 text-center">
+        <i class="bi bi-pie-chart-fill me-2"></i> TỈ LỆ DUYỆT BÀI
+    </h4>
+
+    <div class="row mb-5">
+
+        <!-- Projects -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light text-center">
+                    <strong><i class="bi bi-folder-fill me-1"></i> DỰ ÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="projectStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light text-center">
+                    <strong><i class="bi bi-file-earmark-text-fill me-1"></i> BÀI ĐĂNG MUA BÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="postStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ===== Phần 2: Số bài đăng theo tháng (Line chart parabol) ===== -->
+    <h4 class="mb-3 text-center">
+        <i class="bi bi-calendar-event-fill me-2"></i> BÀI ĐĂNG TỪNG THÁNG
+    </h4>
+
+    <div class="row mb-5">
+
+        <!-- Projects Monthly -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong><i class="bi bi-folder-fill me-1"></i> DỰ ÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="projectMonthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Monthly -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong><i class="bi bi-file-earmark-text-fill me-1"></i> BÀI ĐĂNG MUA BÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="postMonthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ===== Phần 3: Số bài đăng theo tỉnh ===== -->
+    <h4 class="mb-3 text-center">
+        <i class="bi bi-geo-alt-fill me-2"></i> BÀI ĐĂNG THEO TỈNH
+    </h4>
+
+    <div class="row mb-5">
+
+        <!-- Projects Province -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong><i class="bi bi-folder-fill me-1"></i> DỰ ÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="projectProvinceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Province -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong><i class="bi bi-file-earmark-text-fill me-1"></i> BÀI ĐĂNG MUA BÁN</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="postProvinceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // ===== PHẦN 1: Pie chart hiển thị % =====
+        fetch('@Url.Action("ProjectStatusChart")')
+            .then(res => res.json())
+            .then(data => {
+                const total = data.reduce((sum, d) => sum + d.count, 0);
+                const ctx = document.getElementById('projectStatusChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.map(d => d.status || 'Chưa xác định'),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const percent = ((value / total) * 100).toFixed(1);
+                                        return context.label + ': ' + percent + '%';
+                                    }
+                                }
+                            },
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            });
+
+
+        fetch('@Url.Action("PostStatusChart")')
+            .then(res => res.json())
+            .then(data => {
+                const total = data.reduce((sum, d) => sum + d.count, 0);
+                const ctx = document.getElementById('postStatusChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.map(d => d.status || 'Chưa xác định'),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const percent = ((value / total) * 100).toFixed(1);
+                                        return context.label + ': ' + percent + '%';
+                                    }
+                                }
+                            },
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            });
+
+
+        // ===== PHẦN 2: Monthly (Line chart dạng parabol) =====
+        const currentYear = new Date().getFullYear();
+
+
+        // Projects Monthly
+        fetch('@Url.Action("ProjectMonthlyChart")?year=' + currentYear)
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('projectMonthlyChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => 'Tháng ' + d.month),
+                        datasets: [{
+                            label: 'Projects',
+                            data: data.map(d => d.count),
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0,123,255,0.2)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            });
+
+
+        // Posts Monthly
+        fetch('@Url.Action("PostMonthlyChart")?year=' + currentYear)
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('postMonthlyChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => 'Tháng ' + d.month),
+                        datasets: [{
+                            label: 'Posts',
+                            data: data.map(d => d.count),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40,167,69,0.2)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#28a745'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            });
+
+
+        // ===== PHẦN 3: Province (Bar chart) =====
+
+
+        // Projects Province
+        fetch('@Url.Action("ProjectProvinceChart")')
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('projectProvinceChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.province),
+                        datasets: [{
+                            label: 'Projects',
+                            data: data.map(d => d.count),
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            });
+
+
+        // Posts Province
+        fetch('@Url.Action("PostProvinceChart")')
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('postProvinceChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.province),
+                        datasets: [{
+                            label: 'Posts',
+                            data: data.map(d => d.count),
+                            backgroundColor: '#28a745'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            });
+
+    </script>
+}

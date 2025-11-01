@@ -33,6 +33,20 @@ namespace bds.Controllers
 
             ViewBag.FeaturedProjects = featuredProjects;
 
+            // hiển thị tym 
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<int> favoriteIds = new();
+
+            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+            {
+                favoriteIds = await _context.Prefereds
+                    .Where(p => p.UserID == userId && p.ProjectID != null)
+                    .Select(p => p.ProjectID!.Value)
+                    .ToListAsync();
+            }
+
+            ViewBag.FavoriteProjectIds = favoriteIds;
+
             // Lấy tất cả dự án (đã duyệt)
             var allProjects = await _context.Projects
                 .Where(p => p.Status == "Đã duyệt")
@@ -259,6 +273,16 @@ namespace bds.Controllers
             }
 
             // --- CẬP NHẬT TRƯỜNG CƠ BẢN ---
+            bool isModified =
+                existingProject.ProjectName != project.ProjectName ||
+                existingProject.Description != project.Description ||
+                existingProject.Location != project.Location ||
+                existingProject.Area != project.Area ||
+                existingProject.StartDate != project.StartDate ||
+                existingProject.EndDate != project.EndDate ||
+                existingProject.CommuneID != project.CommuneID;
+
+            // Cập nhật dữ liệu mới
             existingProject.ProjectName = project.ProjectName;
             existingProject.Description = project.Description;
             existingProject.Location = project.Location;
@@ -267,15 +291,19 @@ namespace bds.Controllers
             existingProject.EndDate = project.EndDate;
             existingProject.CommuneID = project.CommuneID;
 
-            // --- TRẠNG THÁI: giữ/hoặc chuyển sang Chờ duyệt ---
-            
-                existingProject.Status = "Chờ duyệt";
-                // KHÔNG để NULL — đặt chuỗi rỗng để tránh lỗi SqlNullValueException
-                existingProject.RejectReason = "";
-            
+            // Kiểm tra có thay đổi ảnh không
+            bool imagesChanged = (images != null && images.Count > 0);
 
-            // --- UPDATE AT (không sửa CreateAt) ---
-            existingProject.CreateAt = DateTime.Now; 
+            // Nếu có thay đổi -> chuyển trạng thái về Chờ duyệt
+            if (isModified || imagesChanged)
+            {
+                existingProject.Status = "Chờ duyệt";
+                existingProject.RejectReason = "";
+            }
+
+            // Không thay đổi -> giữ nguyên Status cũ
+            existingProject.CreateAt = DateTime.Now;
+
 
             // --- ẢNH: nếu có ảnh mới -> XÓA ảnh cũ + LƯU ảnh mới
             if (images != null && images.Count > 0)

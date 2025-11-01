@@ -1,5 +1,6 @@
 ﻿using bds.Data;
 using bds.Models;
+using bds.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -10,11 +11,13 @@ namespace bds.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly LogService _logService;
 
-        public NewsController(ApplicationDbContext context, IWebHostEnvironment env)
+        public NewsController(ApplicationDbContext context, IWebHostEnvironment env, LogService logService)
         {
             _context = context;
             _env = env;
+            _logService = logService;
         }
 
         // GET: News
@@ -55,55 +58,69 @@ namespace bds.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Lấy User hiện tại
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
+            {
+                _logService.AddLog(null, "CreateNews", "Lỗi: User chưa đăng nhập", "News", null, false);
                 return Content("❌ Lỗi: User chưa đăng nhập");
+            }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
+            {
+                _logService.AddLog(null, "CreateNews", "Lỗi: Không tìm thấy user", "News", null, false);
                 return Content("❌ Lỗi: Không tìm thấy user");
+            }
 
             model.UserID = user.UserID;
             model.CreateAt = DateTime.Now;
             model.ViewCount = 0;
 
-            // Lưu News trước để có NewsID
-            _context.News.Add(model);
-            await _context.SaveChangesAsync();
-
-            // Upload ảnh nếu có
-            if (imageFiles != null && imageFiles.Count > 0)
+            try
             {
-                string uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(AppContext.BaseDirectory, "wwwroot"), "images", "news");
-                Directory.CreateDirectory(uploadDir);
+                _context.News.Add(model);
+                await _context.SaveChangesAsync();
 
-                foreach (var file in imageFiles)
+                // Upload ảnh nếu có
+                if (imageFiles != null && imageFiles.Count > 0)
                 {
-                    if (file == null || file.Length == 0)
-                        continue;
+                    string uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(AppContext.BaseDirectory, "wwwroot"), "images", "news");
+                    Directory.CreateDirectory(uploadDir);
 
-                    string fileName = Path.GetFileNameWithoutExtension(file.FileName);
-                    string ext = Path.GetExtension(file.FileName);
-                    string safeFileName = string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
-                    string uniqueFileName = Guid.NewGuid() + "_" + safeFileName + ext;
-                    string filePath = Path.Combine(uploadDir, uniqueFileName);
-
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await file.CopyToAsync(stream);
-
-                    _context.Images.Add(new Image
+                    foreach (var file in imageFiles)
                     {
-                        NewsID = model.NewsID,
-                        ImageUrl = "/images/news/" + uniqueFileName
-                    });
+                        if (file == null || file.Length == 0) continue;
+
+                        string fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                        string ext = Path.GetExtension(file.FileName);
+                        string safeFileName = string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
+                        string uniqueFileName = Guid.NewGuid() + "_" + safeFileName + ext;
+                        string filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                        using var stream = new FileStream(filePath, FileMode.Create);
+                        await file.CopyToAsync(stream);
+
+                        _context.Images.Add(new Image
+                        {
+                            NewsID = model.NewsID,
+                            ImageUrl = "/images/news/" + uniqueFileName
+                        });
+                    }
+
+                    await _context.SaveChangesAsync();
                 }
 
-                await _context.SaveChangesAsync();
+                _logService.AddLog(user.UserID, "CreateNews", $" {user.Username} tạo tin tức: {model.Title}", "News", model.NewsID, true);
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                _logService.AddLog(user.UserID, "CreateNews", $"Lỗi khi tạo tin tức: {ex.Message}", "News", null, false);
+                return Content("❌ Lỗi khi tạo tin tức: " + ex.Message);
+            }
         }
 
+        // GET: News/Details/5
         public IActionResult Details(int id)
         {
             var news = _context.News
@@ -113,8 +130,19 @@ namespace bds.Controllers
 
             if (news == null)
                 return NotFound();
-            news.ViewCount += 1;
-            _context.SaveChanges();
+
+            try
+            {
+                news.ViewCount += 1;
+                _context.SaveChanges();
+
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int? userId = userIdStr != null ? int.Parse(userIdStr) : null;
+
+                _logService.AddLog(userId, "ViewNews", $"Xem chi tiết tin tức: {news.Title}", "News", news.NewsID, true);
+            }
+            catch { }
+
             ViewData["Layout"] = User.IsInRole("Admin")
                 ? "~/Views/Shared/_LayoutAdmin.cshtml"
                 : "~/Views/Shared/_Layout.cshtml";
@@ -122,7 +150,7 @@ namespace bds.Controllers
             return View(news);
         }
 
-        // GET: News/Edit
+        // GET: News/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -130,14 +158,13 @@ namespace bds.Controllers
                 return RedirectToAction("AccessDenied", "Account");
 
             var news = await _context.News.FindAsync(id);
-            if (news == null)
-                return NotFound();
+            if (news == null) return NotFound();
 
             ViewData["Layout"] = "~/Views/Shared/_LayoutAdmin.cshtml";
             return View(news);
         }
 
-        // POST: News/Edit
+        // POST: News/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("NewsID,Title,Content")] News model)
@@ -145,44 +172,37 @@ namespace bds.Controllers
             if (!User.IsInRole("Admin"))
                 return RedirectToAction("AccessDenied", "Account");
 
-            if (id != model.NewsID)
-                return NotFound();
+            if (id != model.NewsID) return NotFound();
 
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
+
+            var username = User.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
             try
             {
                 var existingNews = await _context.News.FindAsync(id);
-                if (existingNews == null)
-                    return NotFound();
+                if (existingNews == null) return NotFound();
 
-                // Cập nhật các trường được phép sửa
                 existingNews.Title = model.Title;
                 existingNews.Content = model.Content;
-
-                // Cập nhật thời gian chỉnh sửa
                 existingNews.CreateAt = DateTime.Now;
-
-                // Cập nhật UserID người sửa (nếu có đăng nhập)
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == User.Identity.Name);
-                if (user != null)
-                    existingNews.UserID = user.UserID;
+                if (user != null) existingNews.UserID = user.UserID;
 
                 _context.Update(existingNews);
                 await _context.SaveChangesAsync();
 
+                _logService.AddLog(user?.UserID, "EditNews", $"{user.Username}  xóa tin tức: : {existingNews.Title}", "News", existingNews.NewsID, true);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
+                _logService.AddLog(user?.UserID, "EditNews", $"Lỗi khi chỉnh sửa tin tức: {ex.Message}", "News", model.NewsID, false);
                 return Content("❌ Lỗi khi cập nhật: " + ex.Message);
             }
         }
 
-
-        // POST: News/Delete
+        // POST: News/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -190,12 +210,11 @@ namespace bds.Controllers
             if (!User.IsInRole("Admin"))
                 return RedirectToAction("AccessDenied", "Account");
 
-            var news = await _context.News
-                .Include(n => n.Images)
-                .FirstOrDefaultAsync(n => n.NewsID == id);
+            var news = await _context.News.Include(n => n.Images).FirstOrDefaultAsync(n => n.NewsID == id);
+            if (news == null) return NotFound();
 
-            if (news == null)
-                return NotFound();
+            var username = User.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
             try
             {
@@ -210,17 +229,18 @@ namespace bds.Controllers
 
                     _context.Images.RemoveRange(news.Images);
                 }
+
                 _context.News.Remove(news);
                 await _context.SaveChangesAsync();
 
+                _logService.AddLog(user?.UserID, "DeleteNews", $"{user.Username} xóa tin tức: {news.Title}", "News", news.NewsID, true);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
+                _logService.AddLog(user?.UserID, "DeleteNews", $"Lỗi khi xóa tin tức: {ex.Message}", "News", news.NewsID, false);
                 return Content("❌ Lỗi khi xóa: " + ex.Message);
             }
         }
-
     }
 }
-

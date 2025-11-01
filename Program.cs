@@ -1,4 +1,5 @@
 ﻿using bds.Data;
+using bds.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -12,6 +13,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied"; // Khi truy cập trái phép
     });
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<LogService>();
+
 // Add services to the container.
 builder.Services.AddSession();  // ✅ Bật dịch vụ Session
 
@@ -28,6 +33,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

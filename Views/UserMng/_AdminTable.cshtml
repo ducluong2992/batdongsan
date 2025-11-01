@@ -14,6 +14,7 @@
                 <th>Email</th>
                 <th>Số điện thoại</th>
                 <th>Ngày tạo</th>
+                <th>Trạng thái</th> <!-- Cột trạng thái -->
                 <th class="text-center">Thao tác</th>
             </tr>
         </thead>
@@ -27,20 +28,34 @@
                     <td>@admin.Email</td>
                     <td>@admin.Phone</td>
                     <td>@admin.CreateAt.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @if (admin.IsLocked)
+                        {
+                            <span class="badge bg-danger">Bị khóa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Hoạt động</span>
+                        }
+                    </td>
                     <td class="text-center">
                         @if (isSuperAdmin)
                         {
+                            <!-- Nút sửa -->
                             <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editAdminModal"
                                     data-userid="@admin.UserID" data-username="@admin.Username" data-email="@admin.Email"
                                     data-fullname="@admin.FullName" data-phone="@admin.Phone">
                                 <i class="bi bi-pencil-square"></i> Sửa
                             </button>
 
-                            <form asp-controller="UserMng" asp-action="DeleteUser" method="post" class="d-inline"
-                                  onsubmit="return confirm('Xác nhận xóa quản trị viên này?')">
+                            <!-- Nút khóa/mở khóa với xác nhận -->
+                            <form asp-controller="UserMng" asp-action="ToggleLockUser" method="post" class="d-inline" onsubmit="return confirm('Xác nhận thao tác này?')">
                                 <input type="hidden" name="id" value="@admin.UserID" />
-                                <button type="submit" class="btn btn-sm btn-danger">
-                                    <i class="bi bi-trash"></i> Xóa
+                                <button type="submit"
+                                        class="btn btn-sm @(admin.IsLocked ? "btn-success" : "btn-danger")"
+                                @(admin.IsSuperAdmin ? "disabled" : "")>
+                                    <i class="bi @(admin.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+                                    @(admin.IsLocked ? "Mở khóa" : "Khóa")
                                 </button>
                             </form>
                         }

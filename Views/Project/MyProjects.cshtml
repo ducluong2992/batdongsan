@@ -9,7 +9,7 @@
     ViewData["Title"] = "Quản lý dự án của tôi";
     var approved = Model.Where(p => p.Status == "Đã duyệt").ToList();
     var pending = Model.Where(p => p.Status == "Chờ duyệt").ToList();
-    var rejected = Model.Where(p => p.Status == "Bị từ chối").ToList();
+    var rejected = Model.Where(p => p.Status == "Không duyệt").ToList();
 }
 
 <div class="container mt-4">
