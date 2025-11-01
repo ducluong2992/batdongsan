@@ -70,7 +70,12 @@
                                 <i class="bi bi-people"></i> Quản lý người dùng
                             </a>
                         </li>
-
+                        <!-- Quản lý tin tức -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="News" asp-action="Index">
+                                <i class="bi bi-people"></i> Quản lý tin tức
+                            </a>
+                        </li>
                         <!-- Thống kê -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="AdminThongKe" asp-action="Index">
@@ -84,7 +89,7 @@
 
                         <!-- Nút Đăng tin tức -->
                         <li class="nav-item me-3">
-                            <a class="btn btn-warning text-dark fw-semibold" asp-controller="AdminNews" asp-action="Create">
+                            <a class="btn btn-warning text-dark fw-semibold" asp-controller="News" asp-action="Create">
                                 <i class="bi bi-megaphone"></i> Đăng tin tức
                             </a>
                         </li>
