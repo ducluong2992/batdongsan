@@ -303,18 +303,19 @@ namespace bds.Controllers
                 .Include(p => p.CommuneWard)
                     .ThenInclude(c => c.District)
                         .ThenInclude(d => d.Province)
-                .Where(p => p.Status == "Đã duyệt" && p.CommuneWard != null && p.Price > 0)
+                .Where(p => p.Status == "Đã duyệt" && p.CommuneWard != null && p.Price > 0 && p.Area > 0)
                 .GroupBy(p => p.CommuneWard.District.Province.ProvinceName)
                 .Select(g => new
                 {
                     Province = g.Key,
-                    AveragePrice = g.Average(p => p.Price)
+                    AveragePrice = Math.Round(
+                        g.Sum(p => (double)(p.Price ?? 0)) / g.Sum(p => p.Area ?? 0), 2
+                    ) 
                 })
                 .OrderByDescending(x => x.AveragePrice)
                 .ToListAsync();
 
             return Json(data);
         }
-
     }
 }
