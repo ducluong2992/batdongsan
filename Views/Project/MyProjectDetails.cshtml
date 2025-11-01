@@ -1,0 +1,70 @@
+﻿@model bds.Models.Project
+@{
+    ViewData["Title"] = "Chi tiết dự án";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center fw-semibold shadow-sm mt-3" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="container mt-4">
+     <div class="d-flex justify-content-center gap-3 mb-4">
+        <a asp-action="Edit" asp-controller="Project" asp-route-id="@Model.ProjectID" class="btn btn-warning px-4">
+            <i class="bi bi-pencil"></i> Sửa
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-danger px-4">
+            <i class="bi bi-trash"></i> Xóa
+        </a>
+        <a asp-action="MyProjects" class="btn btn-secondary px-4">← Quay lại</a>
+    </div>
+
+    <h2 class="text-center text-primary fw-bold mb-3">@Model.ProjectName</h2>
+
+    <div class="text-muted text-center mb-3">
+        🕓 Ngày đăng: @Model.CreateAt.ToString("dd/MM/yyyy") |
+        👁️ @Model.ClickCount lượt xem
+    </div>
+
+    <hr />
+
+    <!-- Ảnh -->
+    @if (Model.Images != null && Model.Images.Any())
+    {
+        <img src="@Url.Content(Model.Images.First().ImageUrl)"
+             alt="@Model.ProjectName" class="img-fluid rounded mb-3" style="max-height:400px;object-fit:cover;">
+    }
+    else
+    {
+        <img src="/images/placeholder.jpg" class="img-fluid rounded mb-3" alt="Không có ảnh">
+    }
+
+
+    <!-- Thông tin -->
+    <div class="mb-3">
+        <p><strong>Địa điểm:</strong> @Model.Location, @Model.CommuneWard?.CommuneName, @Model.CommuneWard?.District?.DistrictName, @Model.CommuneWard?.District?.Province?.ProvinceName</p>
+        <p><strong>Diện tích:</strong> @Model.Area m²</p>
+        <p><strong>Trạng thái:</strong> @Model.Status</p>
+
+        @if (!string.IsNullOrEmpty(Model.RejectReason))
+        {
+            <p class="text-danger"><strong>Lý do từ chối:</strong> @Model.RejectReason</p>
+        }
+    </div>
+
+    <h5 class="fw-bold">Mô tả chi tiết</h5>
+    <div class="border rounded p-3 bg-light mb-4" style="white-space: pre-line;">
+        @Html.Raw(Model.Description)
+    </div>
+
+   
+</div>
+@section Scripts {
+    <script>
+        setTimeout(() => {
+            $(".alert-success").fadeOut("slow");
+        }, 3000);
+    </script>
+}

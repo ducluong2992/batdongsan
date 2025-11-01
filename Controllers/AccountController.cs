@@ -81,7 +81,7 @@ namespace bds.Controllers
             var newUser = new User
             {
                 Username = model.Username,
-                Password = model.Password, // ⚠️ nên mã hóa trước khi lưu (bcrypt/SHA256)
+                Password = model.Password, // nên mã hóa trước khi lưu (bcrypt/SHA256)
                 FullName = model.FullName,
                 Email = model.Email,
                 Phone = model.PhoneNumber,

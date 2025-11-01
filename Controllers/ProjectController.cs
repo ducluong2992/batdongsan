@@ -28,7 +28,7 @@ namespace bds.Controllers
                 .OrderByDescending(p => p.ClickCount)
                 .Take(5)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.CommuneWard.District.Province) // ✅ cập nhật theo mô hình mới
+                .Include(p => p.CommuneWard.District.Province) // cập nhật theo mô hình mới
                 .ToListAsync();
 
             ViewBag.FeaturedProjects = featuredProjects;
@@ -38,7 +38,7 @@ namespace bds.Controllers
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.CommuneWard.District.Province) // ✅ cập nhật
+                .Include(p => p.CommuneWard.District.Province) // cập nhật
                 .ToListAsync();
 
             return View(allProjects);
@@ -60,7 +60,7 @@ namespace bds.Controllers
 
             var project = await _context.Projects
                 .Include(p => p.User)
-                .Include(p => p.CommuneWard.District.Province) // ✅ cập nhật theo quan hệ mới
+                .Include(p => p.CommuneWard.District.Province) //cập nhật theo quan hệ mới
                 .Include(p => p.Images)
                 .FirstOrDefaultAsync(m => m.ProjectID == id);
 
@@ -90,7 +90,7 @@ namespace bds.Controllers
             [Bind("ProjectName,Description,Location,Area,StartDate,EndDate,CommuneID")] Project project,
             List<IFormFile>? images)
         {
-            // ✅ Lấy ID người dùng từ Claim
+            // Lấy ID người dùng từ Claim
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId == null)
                 return RedirectToAction("Login", "Account");
@@ -110,7 +110,7 @@ namespace bds.Controllers
                 project.ClickCount = 0;
 
                 _context.Projects.Add(project);
-                await _context.SaveChangesAsync(); // ⚡ Lưu để có ProjectID
+                await _context.SaveChangesAsync(); // Lưu để có ProjectID
 
                 // --- B2: Upload và lưu thông tin ảnh ---
                 if (images != null && images.Count > 0)
@@ -181,13 +181,211 @@ namespace bds.Controllers
             return Json(communes);
         }
 
-        //// --- 7. THÔNG BÁO ĐĂNG THÀNH CÔNG ---
-        //public IActionResult CreateSuccess()
-        //{
-        //    TempData["SuccessMessage"] = "Dự án của bạn đã được gửi thành công! Hãy chờ quản trị viên duyệt nhé.";
-        //    return RedirectToAction("Create");
+        // --- 7. Quản lý Dự án của tôi ---
+        public async Task<IActionResult> MyProjects()
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        //}
+            var myProjects = await _context.Projects
+                .Where(p => p.UserID == currentUserId)
+                .Include(p => p.Images)
+                .Include(p => p.CommuneWard).ThenInclude(c => c.District)
+                .OrderByDescending(p => p.CreateAt)
+                .ToListAsync();
+
+            return View(myProjects);
+        }
+
+        // --- 7.1. Xem chi tiết dự án của tôi ----
+        public async Task<IActionResult> MyProjectDetails(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Images)
+                .Include(p => p.CommuneWard).ThenInclude(c => c.District).ThenInclude(d => d.Province)
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+            if (project == null)
+                return NotFound();
+
+            return View(project);
+        }
+
+        // GET: /Project/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.CommuneWard)
+                    .ThenInclude(c => c.District)
+                        .ThenInclude(d => d.Province)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+            if (project == null)
+                return NotFound();
+
+            ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
+
+            ViewBag.ProvinceID = project.CommuneWard?.District?.ProvinceID;
+            ViewBag.DistrictID = project.CommuneWard?.DistrictID;
+            ViewBag.CommuneID = project.CommuneID;
+
+            return View(project);
+        }
+
+
+
+        // POST: /Project/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Edit(int id, [Bind("ProjectID,ProjectName,Description,Location,Area,StartDate,EndDate,CommuneID")] Project project, List<IFormFile>? images)
+        {
+            if (id != project.ProjectID)
+                return NotFound();
+
+            var existingProject = await _context.Projects
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+            if (existingProject == null) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                // reload ViewBag nếu cần rồi trả về View
+                ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
+                return View(project);
+            }
+
+            // --- CẬP NHẬT TRƯỜNG CƠ BẢN ---
+            existingProject.ProjectName = project.ProjectName;
+            existingProject.Description = project.Description;
+            existingProject.Location = project.Location;
+            existingProject.Area = project.Area;
+            existingProject.StartDate = project.StartDate;
+            existingProject.EndDate = project.EndDate;
+            existingProject.CommuneID = project.CommuneID;
+
+            // --- TRẠNG THÁI: giữ/hoặc chuyển sang Chờ duyệt ---
+            
+                existingProject.Status = "Chờ duyệt";
+                // KHÔNG để NULL — đặt chuỗi rỗng để tránh lỗi SqlNullValueException
+                existingProject.RejectReason = "";
+            
+
+            // --- UPDATE AT (không sửa CreateAt) ---
+            existingProject.CreateAt = DateTime.Now; 
+
+            // --- ẢNH: nếu có ảnh mới -> XÓA ảnh cũ + LƯU ảnh mới
+            if (images != null && images.Count > 0)
+            {
+                // Tạo folder nếu chưa tồn tại
+                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "projects");
+                if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                // XÓA files cũ (trong wwwroot) và xóa record cũ trong _context.Images
+                if (existingProject.Images != null && existingProject.Images.Any())
+                {
+                    foreach (var oldImg in existingProject.Images.ToList())
+                    {
+                        try
+                        {
+                            var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, oldImg.ImageUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    // RemoveRange hoặc Remove từng item
+                    _context.Images.RemoveRange(existingProject.Images);
+                    // clear local collection to avoid duplicates
+                    existingProject.Images.Clear();
+                }
+
+                // Lưu ảnh mới
+                foreach (var file in images)
+                {
+                    if (file.Length <= 0) continue;
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var newImage = new Image
+                    {
+                        ImageUrl = "/images/projects/" + fileName,
+                        // ProjectID will be set by EF when saving (existingProject.ProjectID already set)
+                    };
+                    existingProject.Images.Add(newImage);
+                }
+            }
+            // else: user did NOT upload new images -> giữ nguyên existingProject.Images
+
+            try
+            {
+                _context.Update(existingProject);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật dự án thành công!";
+                return RedirectToAction("MyProjectDetails", new { id = existingProject.ProjectID });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // bạn có thể log dbEx
+                TempData["ErrorMessage"] = "Có lỗi khi cập nhật dữ liệu: " + dbEx.Message;
+                ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
+                return View(project);
+            }
+        }
+
+
+
+        // ======================== DELETE ========================
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+            if (project == null)
+                return NotFound();
+
+            return View(project);
+        }
+
+        [Authorize]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+            if (project != null)
+            {
+                // Xóa ảnh trong thư mục vật lý
+                foreach (var img in project.Images)
+                {
+                    var path = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(path))
+                        System.IO.File.Delete(path);
+                }
+
+                _context.Projects.Remove(project);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Dự án đã được xóa thành công!";
+            }
+
+            return RedirectToAction("MyProjects");
+        }
+
 
     }
 }

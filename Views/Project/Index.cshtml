@@ -61,7 +61,7 @@
 
                                     <div class="mt-auto">
                                         <small class="text-muted">
-                                            🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
+                                            🕓 @item.StartDate?.ToString("dd/MM/yyyy") - @item.EndDate?.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
                                             <a asp-action="Details" asp-route-id="@item.ProjectID" class="text-primary float-end text-decoration-none fw-bold">
                                                 Xem chi tiết →
                                             </a>

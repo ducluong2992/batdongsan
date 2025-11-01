@@ -42,7 +42,7 @@ namespace bds.Models
 
         [StringLength(50)]
         [Display(Name = "Trạng thái")]
-        public string? Status { get; set; } // "Chờ duyệt", "Đã duyệt", v.v.
+        public string? Status { get; set; } // "Chờ duyệt", "Đã duyệt", "Từ chối"
 
         [Display(Name = "Ngày tạo")]
         public DateTime CreateAt { get; set; } = DateTime.Now;
@@ -67,6 +67,8 @@ namespace bds.Models
 
         // Một dự án có nhiều ảnh
         public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+        public string? RejectReason { get; set; } = "";
+
     }
 
     // 🔹 Custom Validation Attribute: EndDate phải lớn hơn StartDate
