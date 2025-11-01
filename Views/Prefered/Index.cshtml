@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Bài đăng yêu thích";
+    var posts = ViewBag.PreferedPosts as IEnumerable<bds.Models.Post>;
+    var projects = ViewBag.PreferedProjects as IEnumerable<bds.Models.Project>;
+}
+
+<div class="container mt-4 mb-5">
+    <h2 class="mb-4 text-center text-primary fw-bold">
+        <i class="bi bi-heart-fill text-danger"></i> Danh sách yêu thích
+    </h2>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs justify-content-center fw-semibold" id="preferTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">
+                Tin đăng (@(posts?.Count() ?? 0))
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
+                Dự án (@(projects?.Count() ?? 0))
+            </button>
+        </li>
+    </ul>
+
+    <!-- Content -->
+    <div class="tab-content mt-4" id="preferTabsContent">
+
+        <!-- TAB: TIN ĐĂNG -->
+        <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+            @if (posts != null && posts.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var p in posts)
+                    {
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 rounded-4 h-100">
+                                <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                     class="card-img-top rounded-top-4"
+                                     style="height:200px;object-fit:cover;" />
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold text-truncate">@p.Title</h5>
+                                    <p class="text-muted mb-2">@String.Format("{0:N0} ₫", p.Price)</p>
+                                    <a asp-controller="Post" asp-action="Details" asp-route-id="@p.PostID"
+                                       class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted text-center mt-4">💔 Chưa có tin nào yêu thích.</p>
+            }
+        </div>
+
+        <!-- TAB: DỰ ÁN -->
+        <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
+            @if (projects != null && projects.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var p in projects)
+                    {
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 rounded-4 h-100">
+                                <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                     class="card-img-top rounded-top-4"
+                                     style="height:200px;object-fit:cover;" />
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold text-truncate">@p.ProjectName</h5>
+                                    <p class="text-muted mb-2">
+                                        📍 @p.CommuneWard?.District?.DistrictName, @p.CommuneWard?.District?.Province?.ProvinceName
+                                    </p>
+                                    <a asp-controller="Project" asp-action="Details" asp-route-id="@p.ProjectID"
+                                       class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted text-center mt-4">💔 Chưa có dự án nào yêu thích.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        background-color: #0d6efd;
+        color: #fff;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .nav-tabs .nav-link {
+        color: #0d6efd;
+        border: none;
+    }
+
+        .nav-tabs .nav-link:hover {
+            background-color: #e8f0ff;
+        }
+
+    .card-title {
+        font-size: 1.05rem;
+    }
+
+    tr:hover {
+        background-color: #f0f8ff !important;
+    }
+</style>

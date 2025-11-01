@@ -19,7 +19,7 @@ namespace bds.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Statistic> Statistics { get; set; }
 
-      
+        public DbSet<Prefered> Prefereds { get; set; }
 
         // --- THÊM PHƯƠNG THỨC NÀY ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +35,7 @@ namespace bds.Data
             modelBuilder.Entity<Category>().ToTable("Category");
             modelBuilder.Entity<News>().ToTable("News");
             modelBuilder.Entity<Project>().ToTable("Projects");
+            modelBuilder.Entity<Prefered>().ToTable("Prefered");
             modelBuilder.Entity<Post>().ToTable("Post");
             modelBuilder.Entity<SearchHistory>().ToTable("SearchHistory");
             modelBuilder.Entity<Image>().ToTable("Images");
