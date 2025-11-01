@@ -1,0 +1,166 @@
+﻿@model bds.Controllers.ApprovedViewModel
+@* ApprovedViewModel gồm: IEnumerable<Project> Projects, IEnumerable<Post> Posts *@
+
+@{
+    ViewData["Title"] = "Danh sách đã duyệt / không duyệt";
+
+    var approvedProjects = Model.Projects.Count(p => p.Status == "Đã duyệt");
+    var rejectedProjects = Model.Projects.Count(p => p.Status == "Không duyệt");
+
+    var approvedPosts = Model.Posts.Count(p => p.Status == "Đã duyệt");
+    var rejectedPosts = Model.Posts.Count(p => p.Status == "Không duyệt");
+}
+
+<h2 class="mb-4 text-primary">@ViewData["Title"]</h2>
+
+
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <span>📦 Dự án</span>
+        <span class="badge bg-light text-dark">
+            Tổng: @Model.Projects.Count() | ✅ @approvedProjects | ❌ @rejectedProjects
+        </span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Projects.Any())
+        {
+            <div class="p-3 text-center text-muted">Không có dự án nào.</div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Project</th>
+                        <th>Người tạo</th>
+                        <th>Địa chỉ</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in Model.Projects)
+                    {
+                        <tr>
+                            <td>@project.ProjectID</td>
+                            <td>@project.ProjectName</td>
+                            <td>@project.User?.FullName</td>
+                            <td>
+                                @project.Location
+                                @if (project.CommuneWard != null)
+                                {
+                                    @: , @project.CommuneWard.CommuneName
+                                    @if (project.CommuneWard.District != null)
+                                    {
+                                        @: , @project.CommuneWard.District.DistrictName
+                                        @if (project.CommuneWard.District.Province != null)
+                                        {
+                                            @: , @project.CommuneWard.District.Province.ProvinceName
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td>@project.CreateAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (project.Status == "Đã duyệt")
+                                {
+                                    <span class="badge bg-success">@project.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@project.Status</span>
+                                }
+                            </td>
+                            <td>@project.RejectReason</td>
+                            <td>
+                                <a class="btn btn-sm btn-info"
+                                   href="@Url.Action("ProjectDetails", "PostMng", new { id = project.ProjectID })">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <span>📝 Bài đăng mua bán</span>
+        <span class="badge bg-light text-dark">
+            Tổng: @Model.Posts.Count() | ✅ @approvedPosts | ❌ @rejectedPosts
+        </span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Posts.Any())
+        {
+            <div class="p-3 text-center text-muted">Không có bài đăng mua bán nào.</div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề Post</th>
+                        <th>Người tạo</th>
+                        <th>Địa chỉ</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in Model.Posts)
+                    {
+                        <tr>
+                            <td>@post.PostID</td>
+                            <td>@post.Title</td>
+                            <td>@post.User?.FullName</td>
+                            <td>
+                                @post.Location
+                                @if (post.CommuneWard != null)
+                                {
+                                    @: , @post.CommuneWard.CommuneName
+                                    @if (post.CommuneWard.District != null)
+                                    {
+                                        @: , @post.CommuneWard.District.DistrictName
+                                        @if (post.CommuneWard.District.Province != null)
+                                        {
+                                            @: , @post.CommuneWard.District.Province.ProvinceName
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td>@post.CreateAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (post.Status == "Đã duyệt")
+                                {
+                                    <span class="badge bg-success">@post.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@post.Status</span>
+                                }
+                            </td>
+                            <td>@post.RejectReason</td>
+                            <td>
+                                <a class="btn btn-sm btn-info"
+                                   href="@Url.Action("PostDetails", "PostMng", new { id = post.PostID })">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

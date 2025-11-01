@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace bds.Models
 {
@@ -8,6 +9,7 @@ namespace bds.Models
     {
         [Key]
         public int PostID { get; set; }
+
 
         [Required(ErrorMessage = "Vui lòng nhập tiêu đề bài viết")]
         [StringLength(255)]
@@ -34,6 +36,8 @@ namespace bds.Models
 
         // --- KHÓA NGOẠI ---
         [ForeignKey(nameof(User))]
+
+
         public int? UserID { get; set; }
 
         [ForeignKey(nameof(CommuneWard))]
@@ -42,6 +46,7 @@ namespace bds.Models
         [ForeignKey(nameof(Category))]
         public int? CategoryID { get; set; }
 
+//<<<<<<< HEAD
         // --- QUAN HỆ ---
         public virtual User? User { get; set; }
         public virtual CommuneWard? CommuneWard { get; set; }
@@ -49,5 +54,14 @@ namespace bds.Models
 
         // Một bài đăng có thể có nhiều ảnh
         public virtual ICollection<Image>? Images { get; set; }
+//=======
+//        //  Quan hệ
+//        public User? User { get; set; }
+
+//        [ForeignKey("CommuneID")]
+//        public CommuneWard? CommuneWard { get; set; }
+//        public Category? Category { get; set; }
+//        public ICollection<Image>? Images { get; set; }
+//>>>>>>> origin/feature/admin
     }
 }

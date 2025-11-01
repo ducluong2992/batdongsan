@@ -1,0 +1,97 @@
+﻿@model bds.Controllers.PendingViewModel
+
+@{
+    ViewData["Title"] = "Danh sách chờ duyệt";
+}
+
+<h2 class="mb-4 text-primary">@ViewData["Title"]</h2>
+
+<!-- ===== Bảng Projects ===== -->
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <span>📦 Projects chờ duyệt</span>
+        <span class="badge bg-light text-dark">@Model.Projects.Count</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Projects.Any())
+        {
+            <div class="p-3 text-center text-muted">Không có dự án chờ duyệt nào.</div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Tên dự án</th>
+                        <th scope="col">Người tạo</th>
+                        <th scope="col">Ngày tạo</th>
+                        <th scope="col">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in Model.Projects)
+                    {
+                        <tr>
+                            <td>@project.ProjectID</td>
+                            <td>@project.ProjectName</td>
+                            <td>@project.User?.FullName</td>
+                            <td>@project.CreateAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a class="btn btn-sm btn-info me-1"
+                                   href="@Url.Action("ProjectDetails", "PostMng", new { id = project.ProjectID })">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- ===== Bảng Posts ===== -->
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <span>📝 Posts chờ duyệt</span>
+        <span class="badge bg-light text-dark">@Model.Posts.Count</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Posts.Any())
+        {
+            <div class="p-3 text-center text-muted">Không có bài đăng chờ duyệt nào.</div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Tiêu đề</th>
+                        <th scope="col">Người tạo</th>
+                        <th scope="col">Ngày tạo</th>
+                        <th scope="col">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in Model.Posts)
+                    {
+                        <tr>
+                            <td>@post.PostID</td>
+                            <td>@post.Title</td>
+                            <td>@post.User?.FullName</td>
+                            <td>@post.CreateAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a class="btn btn-sm btn-info me-1"
+                                   href="@Url.Action("PostDetails", "PostMng", new { id = post.PostID })">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

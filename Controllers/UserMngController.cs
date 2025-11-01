@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bds.Data;
 using bds.Models;
-using System.Linq;
+using bds.Services;
 using Microsoft.AspNetCore.Authentication;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace bds.Controllers
@@ -13,38 +14,40 @@ namespace bds.Controllers
     public class UserMngController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly LogService _logService;
 
-        public UserMngController(ApplicationDbContext context)
+        public UserMngController(ApplicationDbContext context, LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
+
         private bool IsSuperAdmin()
         {
             var currentUser = _context.Users.FirstOrDefault(u => u.Username == User.Identity.Name);
             return currentUser != null && currentUser.IsSuperAdmin;
         }
+
         public IActionResult Index()
         {
             var users = _context.Users.Where(u => u.RoleID == 2).OrderByDescending(u => u.CreateAt).ToList();
-
             var admins = _context.Users.Where(u => u.RoleID == 1).OrderByDescending(u => u.IsSuperAdmin).ToList();
 
             ViewBag.UserCount = users.Count;
             ViewBag.AdminCount = admins.Count;
-
             ViewBag.IsSuperAdmin = IsSuperAdmin();
 
             var model = Tuple.Create(users, admins);
             return View(model);
         }
 
-
-
-        //them qtv
+        // Thêm Admin
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult AddAdmin(string username, string password, string email, string fullName, string phone)
         {
+            var currentUser = _context.Users.FirstOrDefault(u => u.Username == User.Identity.Name);
+
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 TempData["Error"] = "Vui lòng nhập đầy đủ thông tin.";
@@ -94,15 +97,21 @@ namespace bds.Controllers
 
             _context.Users.Add(admin);
             _context.SaveChanges();
+
+            // Add log
+            _logService.AddLog(currentUser?.UserID, "AddAdmin", $"{currentUser?.Username} đã thêm quản trị viên: {admin.Username}", "Users", admin.UserID);
+
             TempData["Success"] = "Thêm quản trị viên thành công!";
             return RedirectToAction(nameof(Index));
         }
+
         // Sửa Admin
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Update(User model)
         {
             var existingUser = _context.Users.FirstOrDefault(u => u.UserID == model.UserID);
+            var currentUser = _context.Users.FirstOrDefault(u => u.Username == User.Identity.Name);
 
             if (existingUser == null)
             {
@@ -116,7 +125,6 @@ namespace bds.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Kiểm tra email đã tồn tại trên user khác
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
                 try
@@ -147,41 +155,53 @@ namespace bds.Controllers
             existingUser.Phone = model.Phone;
 
             _context.SaveChanges();
+
+            // Add log
+            _logService.AddLog(currentUser?.UserID, "UpdateUser", $"{currentUser?.Username} đã cập nhật thông tin người dùng: {existingUser.Username}", "Users", existingUser.UserID);
+
             TempData["Success"] = "Cập nhật thành công!";
             return RedirectToAction(nameof(Index));
         }
 
-
-        // Xóa tài khoản
+        // Khóa / Mở khóa tài khoản
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> ToggleLockUser(int id)
         {
             var user = _context.Users.Find(id);
+            var currentUser = _context.Users.FirstOrDefault(u => u.Username == User.Identity.Name);
+
             if (user == null)
             {
                 TempData["Error"] = "Không tìm thấy người dùng.";
                 return RedirectToAction(nameof(Index));
             }
+
             if (user.RoleID == 1 && !IsSuperAdmin())
             {
-                TempData["Error"] = "Bạn không có quyền xóa tài khoản Admin.";
+                TempData["Error"] = "Bạn không có quyền khóa tài khoản Admin.";
                 return RedirectToAction(nameof(Index));
             }
 
-            _context.Users.Remove(user);
+            user.IsLocked = !user.IsLocked;
+            _context.Update(user);
             _context.SaveChanges();
 
-            if (User.Identity.Name == user.Username)
+            // Add log
+            string action = user.IsLocked ? "khóa" : "mở khóa";
+            _logService.AddLog(currentUser?.UserID, "ToggleLockUser", $"{currentUser?.Username} đã {action} tài khoản: {user.Username}", "Users", user.UserID);
+
+            if (user.IsLocked && User.Identity.Name == user.Username)
             {
                 await HttpContext.SignOutAsync();
                 return RedirectToAction("Login", "Account");
             }
 
-            TempData["Success"] = "Đã xóa tài khoản thành công.";
+            TempData["Success"] = user.IsLocked ? "Tài khoản đã bị khóa." : "Tài khoản đã được mở khóa.";
             return RedirectToAction(nameof(Index));
         }
-        //tim kiem
+
+        // Tìm kiếm User
         public IActionResult SearchUsers(string keyword)
         {
             var users = _context.Users.Where(u => u.RoleID == 2);
@@ -192,10 +212,10 @@ namespace bds.Controllers
             }
 
             users = users.OrderByDescending(u => u.CreateAt);
-
             return PartialView("_UserTable", users.ToList());
         }
 
+        // Tìm kiếm Admin
         public IActionResult SearchAdmins(string keyword)
         {
             var admins = _context.Users.Where(u => u.RoleID == 1);
@@ -210,9 +230,5 @@ namespace bds.Controllers
             ViewBag.IsSuperAdmin = IsSuperAdmin();
             return PartialView("_AdminTable", admins.ToList());
         }
-
-
-
-
     }
 }

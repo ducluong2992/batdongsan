@@ -207,8 +207,9 @@
                                asp-controller="Project" asp-action="Index">Dự án</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Tin tức" ? "active-link" : "")"
-                               asp-controller="TinTuc" asp-action="Index">Tin tức</a>
+
+                            <a class="nav-link" asp-controller="News" asp-action="Index">Tin tức</a>
+
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Phân tích đánh giá" ? "active-link" : "")"

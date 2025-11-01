@@ -41,7 +41,7 @@
 
                         <!-- Dashboard -->
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                            <a class="nav-link" asp-controller="AdminStatistics" asp-action="Dashboard">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </li>
@@ -52,8 +52,8 @@
                                 <i class="bi bi-card-checklist"></i> Quản lý bài đăng
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="AdminPost" asp-action="Index">Bài đăng đã duyệt</a></li>
-                                <li><a class="dropdown-item" asp-controller="AdminPost" asp-action="Pending">Bài đăng chờ duyệt</a></li>
+                                <li><a class="dropdown-item" asp-controller="PostMng" asp-action="Pending">Bài đăng chờ duyệt</a></li>
+                                <li><a class="dropdown-item" asp-controller="PostMng" asp-action="Approved">Bài đăng đã duyệt</a></li>
                             </ul>
                         </li>
 
@@ -70,13 +70,32 @@
                                 <i class="bi bi-people"></i> Quản lý người dùng
                             </a>
                         </li>
-
-                        <!-- Thống kê -->
+                        <!-- Quản lý tin tức -->
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="AdminThongKe" asp-action="Index">
-                                <i class="bi bi-graph-up"></i> Thống kê - Báo cáo
+                            <a class="nav-link" asp-controller="News" asp-action="Index">
+                                <i class="bi bi-people"></i> Quản lý tin tức
                             </a>
                         </li>
+                        <!-- Thống kê -->
+                     <!-- Thống kê - Báo cáo -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="bi bi-graph-up"></i> Thống kê - Báo cáo
+    </a>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" asp-controller="AdminStatistics" asp-action="ThongKeBaiDang">
+                Thống kê bài đăng
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-controller="AdminStatistics" asp-action="SystemStatistics">
+                Báo cáo hệ thống
+            </a>
+        </li>
+    </ul>
+</li>
+
                     </ul>
 
                     <!-- MENU PHẢI -->
@@ -84,7 +103,7 @@
 
                         <!-- Nút Đăng tin tức -->
                         <li class="nav-item me-3">
-                            <a class="btn btn-warning text-dark fw-semibold" asp-controller="AdminNews" asp-action="Create">
+                            <a class="btn btn-warning text-dark fw-semibold" asp-controller="News" asp-action="Create">
                                 <i class="bi bi-megaphone"></i> Đăng tin tức
                             </a>
                         </li>
