@@ -22,16 +22,42 @@ namespace bds.Controllers
         // --- 1. DANH SÁCH BÀI ĐĂNG ---
         public async Task<IActionResult> Index()
         {
-            var post = await _context.Posts
+            // 🌟 Lấy các bài đăng nổi bật (Top 5 click, đã duyệt)
+            var featuredPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.ClickCount)
+                .Take(5)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.Category)
                 .Include(p => p.CommuneWard.District.Province)
-                .OrderByDescending(p => p.CreateAt)
                 .ToListAsync();
 
-            return View(post);
+            ViewBag.FeaturedPosts = featuredPosts;
+
+            // ❤️ Hiển thị bài đăng đã yêu thích
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<int> favoriteIds = new();
+
+            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+            {
+                favoriteIds = await _context.Prefereds
+                    .Where(p => p.UserID == userId && p.PostID != null)
+                    .Select(p => p.PostID!.Value)
+                    .ToListAsync();
+            }
+
+            ViewBag.FavoritePostIds = favoriteIds;
+
+            // 📋 Lấy tất cả bài đăng (đã duyệt)
+            var allPosts = await _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.CreateAt)
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.CommuneWard.District.Province)
+                .ToListAsync();
+
+            return View(allPosts);
         }
+
 
         // --- 2. TRANG CHI TIẾT BÀI ĐĂNG ---
         public async Task<IActionResult> Details(int? id)

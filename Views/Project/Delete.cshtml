@@ -1,0 +1,36 @@
+﻿@model bds.Models.Project
+@{
+    ViewData["Title"] = "Xóa dự án";
+}
+
+<div class="container mt-5">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-danger text-white rounded-top-4">
+            <h4><i class="bi bi-exclamation-triangle"></i> Xác nhận xóa dự án</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="fw-bold text-danger">@Model.ProjectName</h5>
+            <p><strong>Địa chỉ:</strong> @Model.Location</p>
+            <p><strong>Ngày đăng:</strong> @Model.CreateAt.ToString("dd/MM/yyyy")</p>
+
+            <div class="mb-3">
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <img src="@Url.Content(Model.Images.First().ImageUrl)" width="250" class="rounded shadow-sm" />
+                }
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="bi bi-info-circle"></i> Hành động này <strong>không thể hoàn tác</strong>. Bạn có chắc muốn xóa dự án này?
+            </div>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="ProjectID" />
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+                <a asp-action="MyProjectDetails" asp-route-id="@Model.ProjectID" class="btn btn-secondary px-4">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>

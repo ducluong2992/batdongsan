@@ -2,3 +2,29 @@
 2) Trong folder json_LOCATION có file code 
 -> vào chỉnh sửa đường dẫn DB và 3 đường dẫn lưu file json 
 -> chạy code có dữ liệu thành phố, quận huyện, xã
+
+
+Cập nhật--- 02/11
+--1. Thêm lý do bị từ chối
+alter table Post Add RejectReason nvarchar(500) null;
+
+UPDATE Projects
+SET RejectReason = ''
+WHERE RejectReason IS NULL;
+
+
+--2. Thêm bảng Prefered để lưu Post/Project yêu thích
+
+CREATE TABLE Prefered (
+    PreferedID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    PostID INT NULL,
+    ProjectID INT NULL,
+    CONSTRAINT FK_Prefered_User FOREIGN KEY (UserID) 
+        REFERENCES [User](UserID) ON DELETE CASCADE,
+    CONSTRAINT FK_Prefered_Post FOREIGN KEY (PostID) 
+        REFERENCES Post(PostID) ON DELETE CASCADE,
+    CONSTRAINT FK_Prefered_Project FOREIGN KEY (ProjectID) 
+        REFERENCES Projects(ProjectID) ON DELETE CASCADE
+);
+select * from Prefered

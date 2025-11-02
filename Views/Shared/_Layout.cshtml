@@ -174,32 +174,9 @@
                             <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Trang chủ" ? "active-link" : "")"
                                asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                Loại hình
-                            </a>
-
-                            <ul class="dropdown-menu border-0 shadow-sm rounded-3">
-                                @if (ViewBag.Categories != null)
-                                {
-                                    foreach (var cat in ViewBag.Categories)
-                                    {
-                                        <li>
-                                            <a class="dropdown-item"
-                                               asp-controller="LoaiHinh"
-                                               asp-action="DanhSach"
-                                               asp-route-id="@cat.CategoryID">
-                                                @cat.CategoryName
-                                            </a>
-                                        </li>
-                                    }
-                                }
-                                else
-                                {
-                                    <li><span class="dropdown-item text-muted">Đang tải...</span></li>
-                                }
-                            </ul>
+                        <li class="nav-item">
+                            <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Mua bán" ? "active-link" : "")"
+                               asp-controller="Post" asp-action="Index">Mua bán</a>
                         </li>
 
                         <li class="nav-item">
@@ -234,6 +211,8 @@
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                     <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-lines-fill me-2"></i>Thông tin cá nhân</a></li>
                                     <li><a class="dropdown-item" asp-controller="Post" asp-action="MyPosts"><i class="bi bi-file-earmark-text me-2"></i>Quản lý bài đăng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Project" asp-action="MyProjects"><i class="bi bi-file-earmark-text me-2"></i>Dự án của tôi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Prefered" asp-action="Index"><i class="bi bi-heart me-2"></i>Yêu thích</a></li>
                                     <li><a class="dropdown-item" asp-controller="Account" asp-action="EditPassword"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li>

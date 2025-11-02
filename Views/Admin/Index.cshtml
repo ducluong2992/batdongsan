@@ -83,7 +83,6 @@
             }
         }
 
-        // === Vẽ biểu đồ đường giá trung bình theo tỉnh ===
         async function loadAveragePriceChart() {
             try {
                 const res = await fetch('/AdminStatistics/AveragePriceByProvince');
@@ -94,19 +93,21 @@
 
                 const ctx = document.getElementById('avgPriceChart').getContext('2d');
                 new Chart(ctx, {
-                    type: 'line',
+                    type: 'line', 
                     data: {
                         labels: provinces,
                         datasets: [{
-                            label: 'Giá trung bình (VNĐ)',
+                            label: 'Giá trung bình (VNĐ/m²)',
                             data: prices,
                             borderColor: '#007bff',
-                            backgroundColor: 'rgba(0,123,255,0.2)',
-                            borderWidth: 2,
+                            backgroundColor: 'rgba(0,123,255,0.15)',
+                            borderWidth: 3,
                             fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#007bff'
+                            tension: 0.4, 
+                            pointRadius: 5,
+                            pointBackgroundColor: '#007bff',
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#0056b3'
                         }]
                     },
                     options: {
@@ -115,8 +116,14 @@
                             legend: { position: 'top' },
                             tooltip: {
                                 callbacks: {
-                                    label: ctx => ctx.formattedValue.toLocaleString('vi-VN') + " VNĐ"
+                                    label: ctx =>
+                                        `${ctx.formattedValue.toLocaleString('vi-VN')} VNĐ/m²`
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Giá trung bình đất theo tỉnh (VNĐ/m²)',
+                                font: { size: 16 }
                             }
                         },
                         scales: {
@@ -125,10 +132,21 @@
                                 ticks: {
                                     callback: value => value.toLocaleString('vi-VN')
                                 },
-                                title: { display: true, text: 'Giá trung bình (VNĐ)' }
+                                title: {
+                                    display: true,
+                                    text: 'Giá trung bình (VNĐ/m²)'
+                                }
                             },
                             x: {
-                                title: { display: true, text: 'Tỉnh / Thành phố' }
+                                title: {
+                                    display: true,
+                                    text: 'Tỉnh / Thành phố'
+                                },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 60, 
+                                    minRotation: 40
+                                }
                             }
                         }
                     }
@@ -137,6 +155,7 @@
                 console.error("Lỗi tải biểu đồ giá:", error);
             }
         }
+
 
         // === Gọi khi load trang ===
         loadStatistics();
