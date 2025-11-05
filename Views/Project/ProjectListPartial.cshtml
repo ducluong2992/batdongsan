@@ -1,0 +1,23 @@
+﻿@model IEnumerable<bds.Models.Project>
+
+@foreach (var item in Model)
+{
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm border-0 project-card">
+            <a asp-action="Details" asp-route-id="@item.ProjectID">
+                <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
+                     class="card-img-top rounded-top"
+                     style="height: 200px; object-fit: cover;" alt="@item.ProjectName" />
+            </a>
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-truncate">@item.ProjectName</h5>
+                <p class="card-text text-muted small mb-2">
+                    📍 @item.CommuneWard?.CommuneName, @item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                </p>
+                <small class="text-muted">
+                    🕓 @item.StartDate?.ToString("dd/MM/yyyy") - @item.EndDate?.ToString("dd/MM/yyyy") | 👁️ @item.ClickCount
+                </small>
+            </div>
+        </div>
+    </div>
+}

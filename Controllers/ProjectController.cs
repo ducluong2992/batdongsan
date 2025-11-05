@@ -55,6 +55,10 @@ namespace bds.Controllers
                 .Include(p => p.CommuneWard.District.Province) // cập nhật
                 .ToListAsync();
 
+            //dùng để lọc
+            ViewBag.Provinces = _context.Provinces.OrderBy(p => p.ProvinceName).ToList();
+
+
             return View(allProjects);
         }
 
@@ -249,7 +253,7 @@ namespace bds.Controllers
         }
 
 
-
+        // == 8. EDIT ===============
         // POST: /Project/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -372,7 +376,7 @@ namespace bds.Controllers
 
 
 
-        // ======================== DELETE ========================
+        //9. ======================== DELETE ========================
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
@@ -412,6 +416,48 @@ namespace bds.Controllers
             }
 
             return RedirectToAction("MyProjects");
+        }
+
+        // =================10. LỌC ================================
+        // Lọc dự án theo tỉnh/quận (trả về partial)
+        [HttpGet]
+        public async Task<IActionResult> FilterProjects(int? provinceId, int? districtId)
+        {
+            var query = _context.Projects
+                .Include(p => p.Images)
+                .Include(p => p.CommuneWard)
+                    .ThenInclude(c => c.District)
+                        .ThenInclude(d => d.Province)
+                .AsQueryable();
+
+            if (provinceId.HasValue)
+            {
+                query = query.Where(p => p.CommuneWard.District.ProvinceID == provinceId);
+            }
+
+            if (districtId.HasValue)
+            {
+                query = query.Where(p => p.CommuneWard.DistrictID == districtId);
+            }
+
+            var projects = await query
+                .OrderByDescending(p => p.CreateAt)
+                .Select(p => new
+                {
+                    p.ProjectID,
+                    p.ProjectName,
+                    p.Description,
+                    p.ClickCount,
+                    StartDate = p.StartDate.HasValue ? p.StartDate.Value.ToString("dd/MM/yyyy") : "",
+                    EndDate = p.EndDate.HasValue ? p.EndDate.Value.ToString("dd/MM/yyyy") : "",
+                    ProvinceName = p.CommuneWard.District.Province.ProvinceName,
+                    DistrictName = p.CommuneWard.District.DistrictName,
+                    CommuneName = p.CommuneWard.CommuneName,
+                    ImageUrl = p.Images.FirstOrDefault().ImageUrl
+                })
+                .ToListAsync();
+
+            return Json(projects);
         }
 
 

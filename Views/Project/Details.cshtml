@@ -6,7 +6,6 @@
 
 <div class="container mt-4">
     <div class="row">
-        <!-- Cột trái: Chi tiết dự án -->
         <div class="col-lg-8 col-md-7">
             <a asp-action="Index" asp-controller="Project" class="btn btn-secondary mb-3">
                 <i class="bi bi-arrow-left"></i> Quay lại danh sách dự án
@@ -34,7 +33,6 @@
 
             <hr />
 
-            <!-- Ảnh Carousel -->
             @if (Model.Images != null && Model.Images.Count > 0)
             {
                 <div id="projectCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
@@ -58,51 +56,69 @@
                 </div>
             }
 
-            <!-- Mô tả -->
             <h4 class="fw-bold mb-3">📝 Mô tả chi tiết</h4>
             <div class="p-3 bg-light rounded shadow-sm mb-4">
                 @Html.Raw(Model.Description)
             </div>
         </div>
 
-        <!-- Cột phải: Dự án nổi bật -->
         <div class="col-lg-4 col-md-5">
-            <div class="p-3 bg-light rounded shadow-sm mb-4" style="position: sticky; top: 20px;">
-                <h5 class="fw-bold mb-3 text-center text-primary">🌟 Dự án nổi bật</h5>
+            <div class="position-sticky" style="top: 20px;">
+                <!-- Dự án nổi bật -->
+                <div class="p-3 bg-light rounded shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3 text-center text-primary">🌟 Dự án nổi bật</h5>
 
-                @if (featuredProjects != null && featuredProjects.Any())
-                {
-                    <div class="list-group">
-                        @foreach (var item in featuredProjects)
-                        {
-                            <a asp-action="Details" asp-route-id="@item.ProjectID"
-                               class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
-                                <!-- ẢNH LỚN HƠN -->
-                                <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
-                                     alt="@item.ProjectName"
-                                     class="me-3 rounded-3 shadow-sm"
-                                     style="width: 90px; height: 70px; object-fit: cover;">
+                    @if (featuredProjects != null && featuredProjects.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var item in featuredProjects)
+                            {
+                                <a asp-action="Details" asp-route-id="@item.ProjectID"
+                                   class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
+                                    <img src="@(item.Images.Any() ? Url.Content(item.Images.First().ImageUrl) : "/images/placeholder.jpg")"
+                                         alt="@item.ProjectName"
+                                         class="me-3 rounded-3 shadow-sm"
+                                         style="width: 90px; height: 70px; object-fit: cover;">
 
-                                <!-- NỘI DUNG -->
-                                <div class="flex-fill">
-                                    <div class="fw-bold text-dark text-truncate" style="font-size: 1rem;">
-                                        @item.ProjectName
+                                    <div class="flex-fill">
+                                        <div class="fw-bold text-dark text-truncate" style="font-size: 1rem;">
+                                            @item.ProjectName
+                                        </div>
+                                        <div class="text-muted small text-truncate mb-1">
+                                            📍 @item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                                        </div>
+                                        <div class="text-secondary small">
+                                            🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
+                                        </div>
                                     </div>
-                                    <div class="text-muted small text-truncate mb-1">
-                                        📍 @item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
-                                    </div>
-                                    <div class="text-secondary small">
-                                        🕓 @item.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @item.ClickCount
-                                    </div>
-                                </div>
-                            </a>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted text-center">Chưa có dự án nổi bật nào.</p>
-                }
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Chưa có dự án nổi bật nào.</p>
+                    }
+                </div>
+
+                <!-- Thông tin liên hệ -->
+                <div class="p-3 bg-light rounded shadow-sm">
+                    <h5 class="fw-bold mb-3 text-primary">📞 Thông tin liên hệ</h5>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <p><strong>👤 Người đăng:</strong> @Model.User?.FullName</p>
+                        <p><strong>📧 Email:</strong> @Model.User?.Email</p>
+                    }
+                    else
+                    {
+                        <p><strong>👤 Người đăng:</strong> @Model.User?.FullName</p>
+                        <p><strong>📧 Email:</strong> ***</p>
+                        <div class="alert alert-info mt-2">
+                            <i class="bi bi-lock-fill"></i>
+                            Vui lòng <a asp-controller="Account" asp-action="Login" class="fw-bold">đăng nhập</a> để xem thông tin liên hệ.
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>

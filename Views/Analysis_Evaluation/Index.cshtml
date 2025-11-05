@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Phân tích đánh giá";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h3 class="fw-bold mb-4 text-primary text-center">
+        📊 Phân tích & Đánh giá thị trường Bất động sản
+    </h3>
+
+    <div class="row">
+        <!-- 🔹 Biểu đồ 1 -->
+        <div class="col-lg-6 mb-4">
+            <div class="p-3 bg-light rounded shadow-sm">
+                <h5 class="fw-semibold text-center text-success mb-3">
+                    🏙️ Xu hướng mua bán theo khu vực
+                </h5>
+                <canvas id="trendChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- 🔹 Biểu đồ 2 -->
+        <div class="col-lg-6 mb-4">
+            <div class="p-3 bg-light rounded shadow-sm">
+                <h5 class="fw-semibold text-center text-danger mb-3">
+                    💰 Xu hướng giá trung bình theo thời gian
+                </h5>
+
+                <div class="mb-3 text-center">
+                    <label for="provinceFilter" class="form-label fw-semibold">
+                        Chọn tỉnh/thành:
+                    </label>
+                    <select id="provinceFilter" class="form-select d-inline-block w-auto">
+                        <option value="all">Tất cả</option>
+                        @foreach (var province in ViewBag.Provinces)
+                        {
+                            <option value="@province.ProvinceName">@province.ProvinceName</option>
+                        }
+                    </select>
+                </div>
+
+                <canvas id="priceChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- 🔹 Phần 3: Hiệu suất bài đăng -->
+        <!-- =============================== -->
+        <!-- 📈 Hiệu suất bài đăng -->
+        <!-- =============================== -->
+        <div class="p-3 bg-light rounded shadow-sm mt-4">
+            <h5 class="fw-semibold text-center text-primary mb-3">
+                ⚡ Hiệu suất các bài đăng
+            </h5>
+
+            <div class="mb-3 text-center">
+                <label class="fw-semibold me-2">Lọc theo thể loại:</label>
+                <select id="categoryFilter" class="form-select d-inline-block w-auto">
+                    <option value="all">Tất cả</option>
+                    <option value="Post">Bài đăng (Post)</option>
+                    <option value="Project">Dự án (Project)</option>
+                </select>
+                <button id="resetFilter" class="btn btn-outline-secondary btn-sm ms-2">Hủy lọc</button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center" id="performanceTable">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Tên</th>
+                            <th>Thể loại</th>
+                            <th>Lượt xem</th>
+                            <th>Lượt tym</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        // ===============================
+        // 🏙️ Biểu đồ 1: Xu hướng mua bán
+        // ===============================
+        $.getJSON('/Analysis_Evaluation/GetPostAndProjectTrend', function (data) {
+            if (!data || data.length === 0) {
+                console.warn("Không có dữ liệu xu hướng mua bán!");
+                return;
+            }
+
+            const ctx1 = document.getElementById('trendChart');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.province),
+                    datasets: [{
+                        label: 'Tổng số bài đăng & dự án',
+                        data: data.map(d => d.totalCount),
+                        backgroundColor: 'rgba(75,192,192,0.7)',
+                        borderColor: 'rgba(75,192,192,1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: {
+                        title: { display: true, text: 'Top 10 khu vực sôi động nhất' },
+                        legend: { display: false }
+                    },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        });
+
+        // ===============================
+        // 💰 Biểu đồ 2: Xu hướng giá
+        // ===============================
+        const ctx2 = document.getElementById('priceChart');
+        let priceChart;
+
+        function loadPriceTrend(province = "all") {
+            $.getJSON('/Analysis_Evaluation/GetPriceTrend?province=' + province, function (data) {
+                if (!data || data.length === 0) {
+                    console.warn("Không có dữ liệu giá để hiển thị!");
+                    if (priceChart) priceChart.destroy();
+                    return;
+                }
+
+                    // Lấy toàn bộ mốc thời gian có trong dữ liệu, sắp xếp đúng thứ tự
+    const labels = [...new Set(data.map(d => d.label))].sort((a, b) => {
+        const [mA, yA] = a.split('/').map(Number);
+        const [mB, yB] = b.split('/').map(Number);
+        return yA === yB ? mA - mB : yA - yB;
+    });
+
+    // Gom dữ liệu theo tỉnh, và đảm bảo mapping đúng thứ tự theo labels
+    const grouped = {};
+    data.forEach(d => {
+        if (!grouped[d.province]) grouped[d.province] = {};
+        grouped[d.province][d.label] = d.avgPrice;
+    });
+
+    // Chuyển sang định dạng dataset chuẩn cho Chart.js
+    const datasets = Object.keys(grouped).map((prov, idx) => ({
+        label: prov,
+        data: labels.map(lab => grouped[prov][lab] ?? null),
+        borderWidth: 2,
+        borderColor: `hsl(${idx * 50}, 70%, 50%)`,
+        fill: false,
+        tension: 0.2
+    }));
+
+
+                if (priceChart) priceChart.destroy();
+
+                priceChart = new Chart(ctx2, {
+                    type: 'line',
+                    data: { labels: labels, datasets: datasets },
+                    options: {
+                        plugins: {
+                            title: { display: true, text: 'Biến động giá trung bình theo thời gian' },
+                        },
+                        scales: { y: { beginAtZero: false } }
+                    }
+                });
+            });
+        }
+
+        loadPriceTrend();
+
+        $('#provinceFilter').change(function () {
+            const province = $(this).val();
+            loadPriceTrend(province);
+        });
+
+    });
+</script>
+
+<script>
+        $(document).ready(function () {
+        $.getJSON('/Analysis_Evaluation/GetPostPerformance', function (data) {
+            if (data.error) {
+                $('#performanceTable tbody').html(
+                    `<tr><td colspan="5" class="text-danger">${data.error}</td></tr>`
+                );
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                $('#performanceTable tbody').html(
+                    '<tr><td colspan="5" class="text-muted">Không có dữ liệu.</td></tr>'
+                );
+                return;
+            }
+
+            renderTable(data);
+
+            // Lọc
+            $('#categoryFilter').change(function () {
+                const val = $(this).val();
+                if (val === 'all') renderTable(data);
+                else renderTable(data.filter(d => d.category === val));
+            });
+
+            // Hủy lọc
+            $('#resetFilter').click(function () {
+                $('#categoryFilter').val('all');
+                renderTable(data);
+            });
+        });
+
+        function renderTable(rows) {
+            const tbody = $('#performanceTable tbody');
+            tbody.empty();
+
+            rows.forEach(r => {
+                const badgeColor = r.category === "Post" ? "primary" : "success";
+                tbody.append(`
+                    <tr>
+                        <td class="text-start">${r.name}</td>
+                        <td><span class="badge bg-${badgeColor}">${r.category}</span></td>
+                        <td>${r.clickCount}</td>
+                        <td>${r.likeCount}</td>
+                        <td>${r.createdAt}</td>
+                    </tr>
+                `);
+            });
+        }
+    });
+
+</script>
+
