@@ -102,23 +102,36 @@
                 </div>
 
                 <!-- Thông tin liên hệ -->
-                <div class="p-3 bg-light rounded shadow-sm">
-                    <h5 class="fw-bold mb-3 text-primary">📞 Thông tin liên hệ</h5>
-                    @if (User.Identity != null && User.Identity.IsAuthenticated)
-                    {
-                        <p><strong>👤 Người đăng:</strong> @Model.User?.FullName</p>
-                        <p><strong>📧 Email:</strong> @Model.User?.Email</p>
-                    }
-                    else
-                    {
-                        <p><strong>👤 Người đăng:</strong> @Model.User?.FullName</p>
-                        <p><strong>📧 Email:</strong> ***</p>
-                        <div class="alert alert-info mt-2">
-                            <i class="bi bi-lock-fill"></i>
-                            Vui lòng <a asp-controller="Account" asp-action="Login" class="fw-bold">đăng nhập</a> để xem thông tin liên hệ.
-                        </div>
-                    }
-                </div>
+                <a asp-controller="User" asp-action="Profile" asp-route-userId="@Model.UserID"
+                   class="text-decoration-none text-dark d-block hover-card-link">
+
+                    <div class="p-3 bg-light rounded shadow-sm position-relative hover-card">
+                        <h5 class="fw-bold mb-3 text-primary d-flex align-items-center">
+                            📞 Thông tin liên hệ
+                            <span class="ms-auto text-secondary small fst-italic">Các bài đăng khác →</span>
+                        </h5>
+
+                        <p class="mb-1">
+                            <strong>👤 Người đăng:</strong> @Model.User?.FullName
+                        </p>
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <p class="mb-0"><strong>📧 Email:</strong> @Model.User?.Email</p>
+                        }
+                        else
+                        {
+                            <p class="mb-0"><strong>📧 Email:</strong> ***</p>
+                            <div class="alert alert-info mt-2 mb-0 py-2 small">
+                                <i class="bi bi-lock-fill"></i>
+                                Vui lòng <a asp-controller="Account" asp-action="Login" class="fw-bold">đăng nhập</a>
+                                để xem thông tin liên hệ đầy đủ.
+                            </div>
+                        }
+                    </div>
+                </a>
+
+
             </div>
         </div>
     </div>
@@ -187,5 +200,26 @@
             text-overflow: ellipsis;
         }
 
+    /* Toàn bộ khối click được */
+    .hover-card-link {
+        display: block;
+        color: inherit;
+    }
+
+    /* Hiệu ứng hover */
+    .hover-card {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+    .hover-card:hover h5 span {
+                color: #007bff; /* đổi màu phần “Các bài đăng khác” khi hover */
+            }
 </style>
 
