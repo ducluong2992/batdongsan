@@ -15,9 +15,9 @@
         <!-- DANH SÁCH BÀI ĐĂNG -->
         <div class="col-lg-8 col-md-7">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="fw-bold text-primary mb-3">📋 Tất cả dự án mới nhất</h3>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Đăng bài viết của bạn
+                <h3 class="fw-bold text-primary mb-3">📋 Tất cả bài đăng mới nhất</h3>
+                <a asp-action="Create" class="btn btn-primary shadow-sm px-3">
+                    <i class="bi bi-plus-circle me-1"></i> Đăng bài viết của bạn
                 </a>
             </div>
 
@@ -26,58 +26,74 @@
                 {
                     foreach (var post in Model)
                     {
-                        var favorited = favoritedIds.Contains(post.PostID);
-                        var heartClass = favorited ? "bi-heart-fill text-danger" : "bi-heart";
+                        bool isFavorited = favoritedIds.Contains(post.PostID);
 
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 shadow-sm border-0 project-card position-relative">
-                                <a asp-action="Details" asp-route-id="@post.PostID">
-                                    <img src="@(post.Images != null && post.Images.Any()
-                                        ? Url.Content(post.Images.First().ImageUrl)
-                                        : "/images/placeholder.jpg")"
-                                         class="card-img-top rounded-top"
-                                         style="height: 200px; object-fit: cover;" alt="@post.Title" />
-                                </a>
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title fw-bold text-truncate">
-                                        <a asp-action="Details" asp-route-id="@post.PostID" class="text-decoration-none text-dark stretched-link">
-                                            @post.Title
-                                        </a>
-                                    </h5>
-                                    <p class="text-muted small mb-1">
-                                        📍 @post.Location
-                                    </p>
-                                    <p class="text-muted small mb-1">
-                                        💰 @(post.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ
-                                    </p>
-                                    <p class="text-muted small mb-2">
-                                        📐 @(post.Area ?? 0) m²
-                                    </p>
+                        <div class="col-lg-4 col-md-6 fade-up">
+                            <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                                <!-- ✅ Bao toàn bộ card bằng link -->
+                                <a asp-action="Details" asp-route-id="@post.PostID"
+                                   class="stretched-link text-decoration-none text-dark">
+                                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                         class="card-img-top post-image" alt="@post.Title" />
 
-                                    <div class="mt-auto">
-                                        <small class="text-muted">
-                                            🕓 @post.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @post.ClickCount
-                                        </small>
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-bold text-truncate mb-2">@post.Title</h6>
+                                        <p class="text-muted small mb-2 text-truncate">@post.Description</p>
 
-                                        <div class="mt-2">
-                                            <a asp-action="Details" asp-route-id="@post.PostID" class="btn btn-sm btn-outline-primary">
-                                                Xem
-                                            </a>
+                                        <!-- 📍 Địa chỉ -->
+                                        <p class="text-muted small mb-2 text-truncate">
+                                            📍 @(post.Location ?? $"{post.CommuneWard?.District?.Province?.ProvinceName ?? "Không rõ địa chỉ"}")
+                                        </p>
 
-                                            <button class="btn btn-sm btn-outline-danger favorite-btn position-relative"
-                                                    data-postid="@post.PostID" style="z-index:1050;">
-                                                <i class="bi @heartClass"></i>
-                                            </button>
+                                        <div class="small text-secondary mb-2">
+                                            💰 <strong>@post.Price?.ToString("N0") ₫</strong> | 📏 @post.Area m²
+                                        </div>
+
+                                        <!-- 👤 Thông tin người đăng -->
+                                        <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                            <img src="/images/avt/user.png" alt="Avatar"
+                                                 class="rounded-circle me-2" width="36" height="36" />
+                                            <div>
+                                                <div class="fw-semibold small">@post.User?.FullName</div>
+                                                <div class="text-muted small">
+                                                    @{
+                                                        string? phone = post.ContactPhone ?? post.User?.Phone;
+                                                        if (string.IsNullOrEmpty(phone))
+                                                        {
+                                                            @:Không có số
+                                                        }
+                                                        else if (User.Identity.IsAuthenticated)
+                                                        {
+                                                            @phone
+                                                        }
+                                                        else
+                                                        {
+                                                            var masked = phone.Length >= 7
+                                                            ? phone.Substring(0, 5) + "xx ***"
+                                                            : "Ẩn số";
+                                                            @masked
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
+
+                                <!-- ❤️ Nút tim -->
+                                <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                        data-post-id="@post.PostID" style="z-index:10;">
+                                    <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                                </button>
                             </div>
                         </div>
                     }
                 }
                 else
                 {
-                    <p class="text-muted">Hiện chưa có bài đăng nào được duyệt.</p>
+                    <div class="alert alert-info text-center shadow-sm rounded-pill">
+                        Hiện chưa có bài đăng nào được duyệt.
+                    </div>
                 }
             </div>
         </div>
@@ -94,17 +110,15 @@
                         {
                             <a asp-action="Details" asp-route-id="@post.PostID"
                                class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
-                                <img src="@(post.Images != null && post.Images.Any()
-                                    ? Url.Content(post.Images.First().ImageUrl)
-                                    : "/images/placeholder.jpg")"
+                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
                                      alt="@post.Title"
                                      class="me-3 rounded-3 shadow-sm"
                                      style="width: 90px; height: 70px; object-fit: cover;">
                                 <div class="flex-fill">
-                                    <div class="fw-bold text-dark text-truncate" style="font-size: 1rem;">
+                                    <div class="fw-bold text-dark sidebar-title" title="@post.Title">
                                         @post.Title
                                     </div>
-                                    <div class="text-muted small text-truncate mb-1">
+                                    <div class="text-muted small sidebar-location mb-1" title="@post.Location">
                                         📍 @post.Location
                                     </div>
                                     <div class="text-secondary small">
@@ -126,80 +140,55 @@
 
 <!-- STYLE -->
 <style>
-    .project-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-
-            .project-card:hover .card-title a {
-                color: #0d6efd !important;
-                text-decoration: underline;
-            }
-
-    .list-group-item-action {
-        transition: background-color 0.25s ease-in-out, transform 0.2s ease;
+    .post-card {
         border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        position: relative;
     }
 
-        .list-group-item-action:hover {
-            background-color: #e7f3ff;
-            transform: translateY(-2px);
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .list-group-item-action img {
-            border: 2px solid #dee2e6;
+    .post-image {
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .favorite-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+        .favorite-btn:hover i {
+            transform: scale(1.15);
         }
 
-    .favorite-btn i {
-        transition: transform 0.2s ease, color 0.2s ease;
+    .list-group-item-action:hover {
+        background-color: #f5f9ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     }
 
-    .favorite-btn:active i {
-        transform: scale(1.3);
-    }
-    /* Giới hạn số dòng hiển thị cho tiêu đề và địa chỉ trong sidebar */
-    .list-group-item-action .fw-bold {
+    .sidebar-title {
         display: -webkit-box;
-        -webkit-line-clamp: 1; /* chỉ 1 dòng cho tiêu đề, có thể đổi thành 2 nếu muốn */
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: normal;
-        line-height: 1.3em;
-        max-height: 1.3em;
     }
 
-    .list-group-item-action .text-muted {
+    .sidebar-location {
         display: -webkit-box;
-        -webkit-line-clamp: 1; /* địa chỉ chỉ hiển thị tối đa 1 dòng */
+        -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: normal;
     }
-
-    .list-group-item-action {
-        border-radius: 10px;
-        background: #fff;
-        transition: all 0.25s ease;
-    }
-
-        .list-group-item-action:hover {
-            background-color: #f5f9ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-
-        .list-group-item-action img {
-            border-radius: 8px;
-            flex-shrink: 0;
-        }
-
-
 
     #toast {
         visibility: hidden;
@@ -224,7 +213,6 @@
             opacity: 1;
             bottom: 50px;
         }
-
 </style>
 
 <div id="toast"></div>
@@ -242,32 +230,42 @@
 
             $(".favorite-btn").on("click", function (event) {
                 event.preventDefault();
-                event.stopPropagation();
+                event.stopPropagation(); // ✅ Ngăn click lan ra link Details
 
                 const btn = $(this);
-                const postId = btn.data("postid");
+                const postId = btn.data("post-id");
                 btn.prop("disabled", true);
 
                 $.ajax({
                     type: "POST",
                     url: "/Prefered/AddFavoritePost",
-                    headers: { "RequestVerificationToken": token },
-                    data: { postId: postId },
+                    data: {
+                        __RequestVerificationToken: token,
+                        postId: postId
+                    },
                     success: function (res) {
                         if (res.success) {
+                            const icon = btn.find("i");
                             if (res.isFavorited) {
-                                btn.find("i").removeClass("bi-heart").addClass("bi-heart-fill text-danger");
+                                icon.removeClass("bi-heart text-muted")
+                                    .addClass("bi-heart-fill text-danger");
                                 showToast("Đã thêm vào danh sách yêu thích ❤️");
                             } else {
-                                btn.find("i").removeClass("bi-heart-fill text-danger").addClass("bi-heart");
+                                icon.removeClass("bi-heart-fill text-danger")
+                                    .addClass("bi-heart text-muted");
                                 showToast("Đã xóa khỏi danh sách yêu thích 💔");
                             }
                         } else {
                             showToast(res.message || "Không thể thay đổi yêu thích.");
                         }
                     },
-                    error: function () {
-                        showToast("Lỗi kết nối, thử lại.");
+                    error: function (xhr) {
+                        if (xhr.status === 401)
+                            showToast("Vui lòng đăng nhập để thêm vào danh sách yêu thích 🔒");
+                        else if (xhr.status === 400)
+                            showToast("Lỗi xác thực, vui lòng tải lại trang 🔁");
+                        else
+                            showToast("Lỗi kết nối, thử lại.");
                     },
                     complete: function () {
                         btn.prop("disabled", false);

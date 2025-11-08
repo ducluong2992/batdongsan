@@ -46,7 +46,7 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!-- ✅ Có link chi tiết -->
+                                <!--  Có link chi tiết -->
                                 <a asp-action="Details" asp-route-id="@post.PostID">
                                     <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                          class="card-img-top rounded-top-4"
@@ -86,7 +86,7 @@
             }
         </div>
 
-        <!-- ⏳ CHỜ DUYỆT -->
+        <!--  CHỜ DUYỆT -->
         <div class="tab-pane fade" id="pending" role="tabpanel">
             @if (!pending.Any())
             {
@@ -99,7 +99,7 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!-- ⚠️ Không gán link -->
+                                <!--  Không gán link -->
                                 <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;opacity:0.9;" />
@@ -131,7 +131,7 @@
             }
         </div>
 
-        <!-- ❌ BỊ TỪ CHỐI -->
+        <!--  BỊ TỪ CHỐI -->
         <div class="tab-pane fade" id="rejected" role="tabpanel">
             @if (!rejected.Any())
             {
@@ -144,7 +144,7 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!-- ⚠️ Không gán link -->
+                                <!--  Không gán link -->
                                 <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;opacity:0.9;" />

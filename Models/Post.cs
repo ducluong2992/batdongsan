@@ -35,6 +35,11 @@ namespace bds.Models
         [StringLength(255)]
         public string? RejectReason { get; set; }
 
+        [StringLength(10, ErrorMessage = "Số điện thoại phải có 10 số")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại không hợp lệ")]
+        public string? ContactPhone { get; set; }
+
+
         // --- KHÓA NGOẠI ---
         [ForeignKey(nameof(User))]
 

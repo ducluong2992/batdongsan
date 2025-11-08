@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- BANNER + FILTER GLASS -->
+<!-- 🌆 BANNER + FILTER GLASS -->
 <div class="banner position-relative d-flex flex-column justify-content-center align-items-center text-center">
     <div class="overlay"></div>
 
@@ -12,6 +12,7 @@
         <h2 class="text-white fw-bold mb-2">CÁCH TIẾP CẬN BẤT ĐỘNG SẢN NHANH NHẤT</h2>
         <p class="text-white-50 mb-4">Tìm kiếm bất động sản dễ dàng, nhanh chóng và chính xác</p>
 
+        <!-- Form tìm kiếm trong suốt -->
         <!-- Khối lọc hòa trộn với nền -->
         <div class="search-box glass mx-auto p-4 rounded-4" style="max-width: 980px;">
             <form method="get" asp-controller="Home" asp-action="Search" class="d-flex gap-2">
@@ -57,82 +58,342 @@
                 <button class="search-btn">Tìm kiếm</button>
             </form>
         </div>
+
     </div>
 </div>
 
-<!-- DANH SÁCH BĐS -->
-<div class="container my-5">
-    <h3 class="mb-4 fw-bold text-primary">Bất động sản đang bán</h3>
-    <div class="row g-4">
-        @foreach (var item in ViewBag.ListBatDongSan ?? new List<dynamic>())
+<!-- 📰 TIN TỨC NỔI BẬT -->
+<section class="container mt-5 fade-section">
+    <h3 class="section-title text-danger text-center mb-4">📰 Tin tức nổi bật</h3>
+    <div class="row g-4 justify-content-center">
+        @if (ViewBag.TopNews != null && ((List<bds.Models.News>)ViewBag.TopNews).Any())
         {
-            <div class="col-md-4">
-                <div class="card shadow-sm h-100 border-0 rounded-4 overflow-hidden">
-                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.Ten" style="height:220px;object-fit:cover;">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold">@item.Ten</h5>
-                        <p class="card-text text-muted mb-3">
-                            <i class="bi bi-geo-alt"></i> @item.DiaChi <br />
-                            <strong class="text-danger">@item.Gia VNĐ</strong>
-                        </p>
-                        <a href="@Url.Action("ChiTiet", "BatDongSan", new { id = item.Id })"
-                           class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+            var topNews = (List<bds.Models.News>)ViewBag.TopNews;
+            foreach (var news in topNews)
+            {
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card shadow-sm border-0 h-100">
+                        <a asp-controller="News" asp-action="Details" asp-route-id="@news.NewsID" class="text-decoration-none text-dark">
+                            <img src="@(news.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top" alt="@news.Title">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-truncate mb-2">@news.Title</h6>
+                                <p class="text-muted small mb-2">👤 @news.User?.FullName | 👁️ @news.ViewCount lượt xem</p>
+                                <p class="text-secondary small">
+                                    @(news.Content?.Length > 100 ? news.Content.Substring(0, 100) + "..." : news.Content)
+                                </p>
+                                <span class="text-primary small fw-semibold">Xem chi tiết →</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
-            </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info text-center">Chưa có tin tức nổi bật nào.</div>
         }
     </div>
-</div>
+</section>
+
+<!-- 💖 BÀI ĐĂNG NỔI BẬT -->
+<section class="container mt-5 fade-section">
+    <h3 class="section-title text-primary text-center mb-4">🔥 Bài đăng được quan tâm nhiều nhất</h3>
+    <div class="row g-4 justify-content-center">
+        @if (ViewBag.TopPosts != null && ((List<bds.Models.Post>)ViewBag.TopPosts).Any())
+        {
+            var topPosts = (List<bds.Models.Post>)ViewBag.TopPosts;
+            var favoritedIds = ViewBag.FavoritePostIds as List<int> ?? new List<int>();
+
+            foreach (var post in topPosts)
+            {
+                bool isFavorited = favoritedIds.Contains(post.PostID);
+
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                        <a asp-controller="Post" asp-action="Details" asp-route-id="@post.PostID" class="stretched-link text-decoration-none text-dark">
+                            <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                 class="card-img-top post-image" alt="@post.Title" />
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@post.Title</h6>
+                                <p class="text-muted small mb-2 text-truncate">@post.Description</p>
+                                <p class="text-muted small mb-2 text-truncate">
+                                    📍 @(post.Location ?? $"{post.CommuneWard?.District?.Province?.ProvinceName ?? "Không rõ địa chỉ"}")
+                                </p>
+                                <div class="small text-secondary mb-2">
+                                    💰 <strong>@post.Price?.ToString("N0") ₫</strong> | 📏 @post.Area m²
+                                </div>
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="36" height="36" />
+                                    <div>
+                                        <div class="fw-semibold small">@post.User?.FullName</div>
+                                        <div class="text-muted small">
+                                            @{
+                                                string? phone = post.ContactPhone ?? post.User?.Phone;
+                                                if (string.IsNullOrEmpty(phone))
+                                                {
+                                                    @:Không có số
+                                                }
+                                                else if (User.Identity.IsAuthenticated)
+                                                {
+                                                    @phone
+                                                }
+                                                else
+                                                {
+                                                    var masked = phone.Length >= 7
+                                                    ? phone.Substring(0, 5) + "xx ***"
+                                                    : "Ẩn số";
+                                                    @masked
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- ❤️ Nút tim -->
+                        <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                data-post-id="@post.PostID" style="z-index:10;">
+                            <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info text-center">Chưa có bài đăng nổi bật nào.</div>
+        }
+    </div>
+</section>
+
+<!-- 🏗️ DỰ ÁN NỔI BẬT -->
+<section class="container mt-5 fade-section">
+    <h3 class="section-title text-success text-center mb-4">🏗️ Dự án được quan tâm nhiều nhất</h3>
+    <div class="row g-4 justify-content-center">
+        @if (ViewBag.TopProjects != null && ((List<bds.Models.Project>)ViewBag.TopProjects).Any())
+        {
+            var topProjects = (List<bds.Models.Project>)ViewBag.TopProjects;
+            var favoritedProjectIds = ViewBag.FavoriteProjectIds as List<int> ?? new List<int>();
+
+            foreach (var project in topProjects)
+            {
+                bool isFavorited = favoritedProjectIds.Contains(project.ProjectID);
+
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="stretched-link text-decoration-none text-dark">
+                            <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top post-image" alt="@project.ProjectName" />
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@project.ProjectName</h6>
+                                <p class="text-muted small mb-2 text-truncate">@project.Description</p>
+                                <div class="small text-secondary mb-2">📍 @project.Location</div>
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="36" height="36" />
+                                    <div>
+                                        <div class="fw-semibold small">@project.User?.FullName</div>
+                                        <div class="text-muted small">👁️ @project.ClickCount lượt xem</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- ❤️ Nút tim -->
+                        <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                data-project-id="@project.ProjectID" style="z-index:10;">
+                            <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info text-center">Chưa có dự án nổi bật nào.</div>
+        }
+    </div>
+</section>
 
 @section Scripts {
     <script>
+        // Dropdown động
         $(document).ready(function () {
-
-            // --- Khi chọn TỈNH ---
             $("#ProvinceDropdown").change(function () {
-                var provinceId = $(this).val();
-                var districtDropdown = $("#DistrictDropdown");
-                var communeDropdown = $("#CommuneDropdown");
-
-                districtDropdown.empty();
-                communeDropdown.empty();
-                communeDropdown.append('<option value="">Phường/Xã</option>');
-
-                if (provinceId) {
-                    districtDropdown.append('<option>Đang tải...</option>');
-                    $.getJSON('/Home/GetDistrictsByProvinceId', { provinceId: provinceId }, function (data) {
-                        districtDropdown.empty();
-                        districtDropdown.append('<option value="">Quận/Huyện</option>');
-                        $.each(data, function (i, d) {
-                            districtDropdown.append(`<option value="${d.id}">${d.name}</option>`);
-                        });
+                var pid = $(this).val();
+                var d = $("#DistrictDropdown"), c = $("#CommuneDropdown");
+                d.empty(); c.empty().append('<option>Phường/Xã</option>');
+                if (pid) {
+                    d.append('<option>Đang tải...</option>');
+                    $.getJSON('/Home/GetDistrictsByProvinceId', { provinceId: pid }, data => {
+                        d.empty().append('<option>Quận/Huyện</option>');
+                        $.each(data, (i, x) => d.append(`<option value="${x.id}">${x.name}</option>`));
                     });
-                } else {
-                    districtDropdown.append('<option value="">Quận/Huyện</option>');
-                }
+                } else d.append('<option>Quận/Huyện</option>');
             });
 
-            // --- Khi chọn QUẬN ---
             $("#DistrictDropdown").change(function () {
-                var districtId = $(this).val();
-                var communeDropdown = $("#CommuneDropdown");
-
-                communeDropdown.empty();
-
-                if (districtId) {
-                    communeDropdown.append('<option>Đang tải...</option>');
-                    $.getJSON('/Home/GetCommunesByDistrictId', { districtId: districtId }, function (data) {
-                        communeDropdown.empty();
-                        communeDropdown.append('<option value="">Phường/Xã</option>');
-                        $.each(data, function (i, c) {
-                            communeDropdown.append(`<option value="${c.id}">${c.name}</option>`);
-                        });
+                var did = $(this).val(), c = $("#CommuneDropdown");
+                c.empty();
+                if (did) {
+                    c.append('<option>Đang tải...</option>');
+                    $.getJSON('/Home/GetCommunesByDistrictId', { districtId: did }, data => {
+                        c.empty().append('<option>Phường/Xã</option>');
+                        $.each(data, (i, x) => c.append(`<option value="${x.id}">${x.name}</option>`));
                     });
-                } else {
-                    communeDropdown.append('<option value="">Phường/Xã</option>');
-                }
+                } else c.append('<option>Phường/Xã</option>');
             });
-
         });
+
+        // Yêu thích
+        $(function () {
+            const token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+            $(".favorite-btn").on("click", function (e) {
+                e.preventDefault(); e.stopPropagation();
+                const btn = $(this);
+                const postId = btn.data("post-id");
+                const projectId = btn.data("project-id");
+                const url = postId ? "/Prefered/AddFavoritePost" : "/Prefered/AddFavorite";
+                const data = { __RequestVerificationToken: token };
+                if (postId) data.postId = postId;
+                if (projectId) data.projectId = projectId;
+                $.post(url, data, res => {
+                    if (res.success) {
+                        const i = btn.find("i");
+                        if (res.isFavorited) i.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger");
+                        else i.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-muted");
+                    }
+                });
+            });
+        });
+
+        // Hiệu ứng fade-up khi cuộn
+        const fadeEls = document.querySelectorAll(".fade-up");
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("show");
+            });
+        }, { threshold: 0.2 });
+        fadeEls.forEach(el => observer.observe(el));
     </script>
 }
+
+<style>
+    /* --- Banner + overlay --- */
+    .banner {
+        background: url('/images/TrangChu/anhnen3.jpg') center/cover no-repeat;
+        height: 600px;
+        position: relative;
+    }
+
+        .banner .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+        }
+
+    .brand-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #fff;
+        text-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    }
+
+        .brand-title span {
+            color: #00bfff;
+        }
+
+    /* --- Bộ lọc --- */
+    .search-box {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    }
+
+    .form-select.pill {
+        border-radius: 25px;
+        border: 1px solid rgba(255,255,255,0.4);
+        background-color: rgba(255,255,255,0.9);
+    }
+
+    .search-btn {
+        border-radius: 25px;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        background: linear-gradient(90deg,#007bff,#00bfff);
+        color: #fff;
+        font-weight: 600;
+        transition: all .3s;
+    }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(90deg,#006ae6,#00aaff);
+        }
+
+    .search-box form {
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .search-box select, .search-btn {
+        min-width: 140px;
+        height: 44px;
+    }
+
+
+    /* --- Card chung --- */
+    .card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all .3s;
+    }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.1);
+        }
+
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    /* --- Nút tim --- */
+    .favorite-btn i {
+        transition: transform .2s;
+    }
+
+    .favorite-btn:hover i {
+        transform: scale(1.2);
+    }
+
+    /* --- Fade-up --- */
+    .fade-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all .7s ease-out;
+    }
+
+        .fade-up.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    /* --- Section Title --- */
+    .section-title {
+        font-weight: 700;
+        position: relative;
+    }
+
+        .section-title::after {
+            content: "";
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg,#007bff,#00c6ff);
+            margin: 0.5rem auto;
+            border-radius: 10px;
+        }
+</style>

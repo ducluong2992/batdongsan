@@ -1,0 +1,286 @@
+﻿@removeTagHelper "Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers"
+@{
+    ViewData["Title"] = "Kết quả tìm kiếm";
+    var posts = ViewBag.ResultPosts as IEnumerable<bds.Models.Post>;
+    var projects = ViewBag.ResultProjects as IEnumerable<bds.Models.Project>;
+    var favoritedIds = ViewBag.FavoritePostIds as List<int> ?? new List<int>();
+}
+<div class="search-box glass mx-auto p-4 rounded-4" style="max-width: 980px;">
+    <form method="get" asp-controller="Home" asp-action="Search" class="d-flex gap-2">
+
+        <!-- Tỉnh/Thành -->
+        <select class="form-select pill" id="ProvinceDropdown" name="ProvinceId">
+            <option value="">Tỉnh/Thành</option>
+            @foreach (var p in ViewBag.Provinces)
+            {
+                <option value="@p.ProvinceID"
+                    @if (ViewBag.SelectedProvinceId != null && ViewBag.SelectedProvinceId == p.ProvinceID)
+                    {
+                        <text>selected</text>
+                    }>
+                    @p.ProvinceName
+                </option>
+            }
+        </select>
+
+        <!-- Quận/Huyện -->
+        <select class="form-select pill" id="DistrictDropdown" name="DistrictId">
+            <option value="">Quận/Huyện</option>
+            @if (ViewBag.Districts != null)
+            {
+                foreach (var d in ViewBag.Districts)
+                {
+                    <option value="@d.DistrictID"
+                        @if (ViewBag.SelectedDistrictId != null && ViewBag.SelectedDistrictId == d.DistrictID)
+                        {
+                            <text>selected</text>
+                        }>
+                        @d.DistrictName
+                    </option>
+                }
+            }
+        </select>
+
+        <!-- Xã/Phường -->
+        <select class="form-select pill" id="CommuneDropdown" name="CommuneId">
+            <option value="">Phường/Xã</option>
+            @if (ViewBag.Communes != null)
+            {
+                foreach (var c in ViewBag.Communes)
+                {
+                    <option value="@c.CommuneID"
+                        @if (ViewBag.SelectedCommuneId != null && ViewBag.SelectedCommuneId == c.CommuneID)
+                        {
+                            <text>selected</text>
+                        }>
+                        @c.CommuneName
+                    </option>
+                }
+            }
+        </select>
+
+        <!-- Loại hình -->
+        <select class="form-select pill" name="LoaiHinh">
+            <option value="">Loại hình</option>
+            @foreach (var cat in ViewBag.Categories)
+            {
+                <option value="@cat.CategoryID"
+                    @if (ViewBag.SelectedLoaiHinh != null && ViewBag.SelectedLoaiHinh == cat.CategoryID)
+                    {
+                        <text>selected</text>
+                    }>
+                    @cat.CategoryName
+                </option>
+            }
+        </select>
+
+        <!-- Giá -->
+        <select class="form-select pill" name="Gia">
+            <option value="">Giá</option>
+            <option value="1" @if (ViewBag.SelectedGia == 1) { <text>selected</text>; }>Dưới 1 tỷ</option>
+            <option value="2" @if (ViewBag.SelectedGia == 2) { <text>selected</text>; }>1 - 3 tỷ</option>
+            <option value="3" @if (ViewBag.SelectedGia == 3) { <text>selected</text>; }>3 - 5 tỷ</option>
+            <option value="4" @if (ViewBag.SelectedGia == 4) { <text>selected</text>; }>5 - 10 tỷ</option>
+            <option value="5" @if (ViewBag.SelectedGia == 5) { <text>selected</text>; }>Trên 10 tỷ</option>
+        </select>
+
+        <button class="search-btn">Tìm kiếm</button>
+    </form>
+</div>
+
+
+<div class="container mt-5">
+    <h3 class="mb-4 text-center fw-bold">🔍 Kết quả tìm kiếm</h3>
+
+    <!-- ==== DANH MỤC BÀI ĐĂNG ==== -->
+    <h4 class="mt-4 mb-3 text-primary fw-bold">Bài đăng</h4>
+    @if (posts == null || !posts.Any())
+    {
+        <div class="alert alert-info text-center">Không tìm thấy bài đăng phù hợp.</div>
+    }
+    else
+    {
+        <div class="row g-4 justify-content-center">
+            @foreach (var post in posts)
+            {
+                bool isFavorited = favoritedIds.Contains(post.PostID);
+
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                        <a asp-controller="Post" asp-action="Details" asp-route-id="@post.PostID"
+                           class="stretched-link text-decoration-none text-dark">
+                            <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                 class="card-img-top post-image" alt="@post.Title" />
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@post.Title</h6>
+                                <p class="text-muted small mb-2 text-truncate">@post.Description</p>
+                                <p class="text-muted small mb-2 text-truncate">
+                                    📍 @(post.Location ?? $"{post.CommuneWard?.District?.Province?.ProvinceName ?? "Không rõ địa chỉ"}")
+                                </p>
+                                <div class="small text-secondary mb-2">
+                                    💰 <strong>@post.Price?.ToString("N0") ₫</strong> | 📏 @post.Area m²
+                                </div>
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="36" height="36" />
+                                    <div>
+                                        <div class="fw-semibold small">@post.User?.FullName</div>
+                                        <div class="text-muted small">
+                                            @{
+                                                string? phone = post.ContactPhone ?? post.User?.Phone;
+                                                if (string.IsNullOrEmpty(phone))
+                                                {
+                                                    @:Không có số
+                                                }
+                                                else if (User.Identity.IsAuthenticated)
+                                                {
+                                                    @phone
+                                                }
+                                                else
+                                                {
+                                                    var masked = phone.Length >= 7
+                                                    ? phone.Substring(0, 5) + "xx ***"
+                                                    : "Ẩn số";
+                                                    @masked
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- ❤️ Nút tim -->
+                        <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                data-post-id="@post.PostID" style="z-index:10;">
+                            <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- ==== DANH MỤC DỰ ÁN ==== -->
+    <h4 class="mt-5 mb-3 text-success fw-bold">Dự án</h4>
+    @if (projects == null || !projects.Any())
+    {
+        <div class="alert alert-info text-center">Không tìm thấy dự án phù hợp.</div>
+    }
+    else
+    {
+        <div class="row g-4 justify-content-center">
+            @foreach (var pr in projects)
+            {
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 position-relative post-card">
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@pr.ProjectID"
+                           class="stretched-link text-decoration-none text-dark">
+                            <img src="@(pr.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                 class="card-img-top post-image" alt="@pr.ProjectName" />
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@pr.ProjectName</h6>
+                                <p class="text-muted small mb-2 text-truncate">@pr.Description</p>
+                                <div class="small text-secondary mb-2">
+                                    📍 @pr.CommuneWard?.District?.Province?.ProvinceName
+                                </div>
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="36" height="36" />
+                                    <div class="fw-semibold small">@pr.User?.FullName</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="text-center mt-5">
+        <a asp-action="Index" class="btn btn-secondary px-4">
+            ⬅ Quay lại trang chủ
+        </a>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* --- CARD STYLE --- */
+        .post-card {
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .post-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .post-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .post-card:hover .post-image {
+            transform: scale(1.05);
+        }
+
+        /* --- FAVORITE BUTTON --- */
+        .favorite-btn {
+            background: none;
+            border: none;
+        }
+
+        .favorite-btn i {
+            transition: all 0.2s ease;
+        }
+
+        .favorite-btn:hover i {
+            transform: scale(1.2);
+        }
+
+
+       
+    </style>
+}
+
+@section Scripts {
+    <script>
+        
+
+        // Hiệu ứng cho nút ❤️ (Ajax nhẹ)
+        document.querySelectorAll(".favorite-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const icon = btn.querySelector("i");
+                const postId = btn.dataset.postId;
+                const isFavorited = icon.classList.contains("bi-heart-fill");
+
+                // Gửi yêu cầu Ajax (ví dụ, tới /Post/ToggleFavorite)
+                try {
+                    const res = await fetch(`/Post/ToggleFavorite/${postId}`, {
+                        method: "POST"
+                    });
+
+                    if (res.ok) {
+                        icon.classList.toggle("bi-heart-fill");
+                        icon.classList.toggle("bi-heart");
+                        icon.classList.toggle("text-danger");
+                        icon.classList.toggle("text-muted");
+                    }
+                } catch (err) {
+                    console.error("Lỗi khi cập nhật yêu thích:", err);
+                }
+            });
+        });
+
+
+
+
+    </script>
+}

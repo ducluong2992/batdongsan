@@ -1,0 +1,235 @@
+﻿@model bds.Models.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "Trang của " + (Model.User.FullName ?? Model.User.Username);
+
+    // Lấy danh sách id bài yêu thích của người đang đăng nhập (nếu có)
+    var favoritedIds = ViewBag.FavoritePostIds as List<int> ?? new List<int>();
+}
+
+<div class="container my-5">
+
+    <!-- Thông tin người dùng -->
+    <div class="user-banner text-white mb-5 d-flex align-items-center">
+        <img src="/images/avt/user.png"
+             alt="avatar" class="rounded-circle border border-3 border-white me-3"
+             width="100" height="100" style="object-fit: cover;" />
+        <div>
+            <h3 class="fw-bold mb-1">@Model.User.FullName</h3>
+            <p class="mb-0"><i class="bi bi-telephone"></i> @Model.User.Phone</p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> @Model.User.Email</p>
+        </div>
+    </div>
+
+
+    <!-- ===== DANH SÁCH BÀI ĐĂNG ===== -->
+    <h4 class="fw-bold text-primary mb-4"><i class="bi bi-building me-2"></i>Các bài đăng của @Model.User.FullName</h4>
+
+    @if (Model.Posts.Any())
+    {
+        <div class="row g-4 mb-5">
+            @foreach (var post in Model.Posts)
+            {
+                bool isFavorited = favoritedIds.Contains(post.PostID);
+
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                        <a asp-controller="Post" asp-action="Details" asp-route-id="@post.PostID"
+                           class="stretched-link text-decoration-none text-dark">
+                            <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                 class="card-img-top post-image" alt="@post.Title" />
+
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@post.Title</h6>
+                                <p class="text-muted small mb-2 text-truncate">@post.Description</p>
+
+                                <p class="text-muted small mb-2 text-truncate">
+                                    📍 @(post.Location ?? $"{post.CommuneWard?.District?.Province?.ProvinceName ?? "Không rõ địa chỉ"}")
+                                </p>
+
+                                <div class="small text-secondary mb-2">
+                                    💰 <strong>@post.Price?.ToString("N0") ₫</strong> | 📏 @post.Area m²
+                                </div>
+
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar"
+                                         class="rounded-circle me-2" width="36" height="36" />
+                                    <div>
+                                        <div class="fw-semibold small">@Model.User.FullName</div>
+                                        <div class="text-muted small">
+                                            @{
+                                                string? phone = post.ContactPhone ?? Model.User.Phone;
+                                                if (string.IsNullOrEmpty(phone))
+                                                {
+                                                    @:Không có số
+                                                }
+                                                else
+                                                {
+                                                    @phone
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- ❤️ Nút tim -->
+                        <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                data-post-id="@post.PostID" style="z-index:10;">
+                            <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted fst-italic">Người này chưa có bài đăng nào được duyệt.</p>
+    }
+
+    <!-- ===== DANH SÁCH DỰ ÁN ===== -->
+    <h4 class="fw-bold text-success mb-4"><i class="bi bi-diagram-3 me-2"></i>Các dự án của @Model.User.FullName</h4>
+
+    @if (Model.Projects.Any())
+    {
+        <div class="row g-4">
+            @foreach (var project in Model.Projects)
+            {
+                <div class="col-lg-4 col-md-6 fade-up">
+                    <div class="card h-100 shadow-sm border-0 post-card position-relative">
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID"
+                           class="stretched-link text-decoration-none text-dark">
+                            <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                 class="card-img-top post-image" alt="@project.ProjectName" />
+
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-2">@project.ProjectName</h6>
+                                <p class="text-muted small mb-2 text-truncate">@project.Description</p>
+
+                                <p class="text-muted small mb-2 text-truncate">
+                                    📍 @(project.Location ?? $"{project.CommuneWard?.District?.Province?.ProvinceName ?? "Không rõ địa chỉ"}")
+                                </p>
+
+                                
+
+                                <div class="d-flex align-items-center border-top pt-2 mt-2">
+                                    <img src="/images/avt/user.png" alt="Avatar"
+                                         class="rounded-circle me-2" width="36" height="36" />
+                                    <div>
+                                        <div class="fw-semibold small">@Model.User.FullName</div>
+                                        <div class="text-muted small">@Model.User.Phone</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted fst-italic">Người này chưa có dự án nào được duyệt.</p>
+    }
+</div>
+
+
+<!-- ===== CSS kế thừa từ Post/Index ===== -->
+<style>
+    .post-card {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        position: relative;
+    }
+
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .post-image {
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .favorite-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+        .favorite-btn:hover i {
+            transform: scale(1.15);
+        }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #007bff, #00b4d8);
+    }
+
+    .user-banner {
+        background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div id="toast"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message) {
+            const toast = $("#toast");
+            toast.text(message).addClass("show");
+            setTimeout(() => toast.removeClass("show"), 2500);
+        }
+
+        $(function () {
+            const token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+
+            $(".favorite-btn").on("click", function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const btn = $(this);
+                const postId = btn.data("post-id");
+                btn.prop("disabled", true);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Prefered/AddFavoritePost",
+                    data: {
+                        __RequestVerificationToken: token,
+                        postId: postId
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            const icon = btn.find("i");
+                            if (res.isFavorited) {
+                                icon.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger");
+                                showToast("Đã thêm vào danh sách yêu thích ❤️");
+                            } else {
+                                icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-muted");
+                                showToast("Đã xóa khỏi danh sách yêu thích 💔");
+                            }
+                        } else {
+                            showToast(res.message || "Không thể thay đổi yêu thích.");
+                        }
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 401)
+                            showToast("Vui lòng đăng nhập để thêm vào danh sách yêu thích 🔒");
+                        else
+                            showToast("Lỗi kết nối, thử lại.");
+                    },
+                    complete: function () {
+                        btn.prop("disabled", false);
+                    }
+                });
+            });
+        });
+    </script>
+}

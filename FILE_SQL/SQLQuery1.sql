@@ -81,5 +81,8 @@ GO
 update Projects set Status = N'Đã duyệt' where ProjectID >4
 delete from Projects where ProjectID <=4*/
 
+-- theem lien he 
+
+ALTER TABLE Post ADD ContactPhone NVARCHAR(10) NULL;
 
 
