@@ -3,89 +3,220 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row">
-        <!-- Cột ảnh -->
-        <div class="col-md-7">
+        <!-- CỘT TRÁI: ẢNH & MÔ TẢ -->
+        <div class="col-lg-8">
+            <!-- ẢNH CHÍNH -->
             @if (Model.Images != null && Model.Images.Any())
             {
-                <div id="carouselPostImages" class="carousel slide rounded shadow-sm" data-bs-ride="carousel">
-                    <div class="carousel-inner rounded">
-                        @for (int i = 0; i < Model.Images.Count; i++)
-                        {
-                            var img = Model.Images.ElementAt(i);
-                            <div class="carousel-item @(i == 0 ? "active" : "")">
-                                <img src="@img.ImageUrl" class="d-block w-100" style="height:400px; object-fit:cover;" />
-                            </div>
-                        }
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPostImages" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPostImages" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
+                <div class="position-relative rounded overflow-hidden shadow-sm mb-3">
+                    <img id="mainImage" src="@Model.Images.First().ImageUrl"
+                         alt="@Model.Title"
+                         class="img-fluid w-100 rounded-3"
+                         style="height: 450px; object-fit: cover;">
+                    <button id="prevBtn" class="nav-btn left"><i class="bi bi-chevron-left"></i></button>
+                    <button id="nextBtn" class="nav-btn right"><i class="bi bi-chevron-right"></i></button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        var img = Model.Images.ElementAt(i);
+                        <img src="@img.ImageUrl"
+                             data-index="@i"
+                             class="thumbnail-img rounded-3 shadow-sm"
+                             style="width:95px; height:80px; object-fit:cover; cursor:pointer;" />
+                    }
                 </div>
             }
             else
             {
-                <img src="/images/no-image.png" class="img-fluid rounded shadow-sm" style="height:400px; object-fit:cover;" />
+                <img src="/images/no-image.png" class="img-fluid rounded shadow-sm mb-4" style="height:420px; object-fit:cover;">
             }
-        </div>
 
-        <!-- Cột thông tin -->
-        <div class="col-md-5">
-            <div class="card border-0 shadow-sm rounded-3 p-4">
-                <h3 class="fw-bold text-primary mb-3">@Model.Title</h3>
+            <!-- TIÊU ĐỀ + THÔNG TIN CƠ BẢN -->
+            <h3 class="fw-bold text-dark mb-3">@Model.Title</h3>
+            <div class="text-muted small mb-3">
+                🕓 @Model.CreateAt.ToString("dd/MM/yyyy") &nbsp;|&nbsp; 👁️ @Model.ClickCount lượt xem
+            </div>
 
-                <div class="text-muted mb-3 small">
-                    <i class="bi bi-calendar"></i> @Model.CreateAt.ToString("dd/MM/yyyy")
-                    <span class="ms-3"><i class="bi bi-eye"></i> @Model.ClickCount lượt xem</span>
+            <div class="bg-light rounded-4 p-3 mb-4">
+                <div class="d-flex flex-wrap justify-content-between mb-2">
+                    <div><i class="bi bi-geo-alt text-danger"></i> <b>Địa chỉ:</b> @Model.Location</div>
+                    <div><i class="bi bi-rulers text-primary"></i> <b>Diện tích:</b> @(Model.Area ?? 0) m²</div>
                 </div>
+                <div><i class="bi bi-cash-stack text-success"></i> <b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") ₫</div>
+            </div>
 
-                <div class="mb-3">
-                    <span class="badge bg-success fs-6">@Model.Status</span>
-                </div>
-
-                <ul class="list-unstyled mb-4">
-                    <li class="mb-2"><i class="bi bi-geo-alt text-danger"></i> <b>Địa chỉ:</b> @Model.Location</li>
-                    <li class="mb-2">
-                        <i class="bi bi-cash-stack text-success"></i>
-                        <b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") VNĐ
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-rulers text-primary"></i>
-                        <b>Diện tích:</b> @(Model.Area ?? 0) m²
-                    </li>
-                </ul>
-
-                <a asp-action="Index" class="btn btn-outline-secondary w-100 rounded-pill">
-                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                </a>
+            <!-- MÔ TẢ -->
+            <h5 class="fw-semibold border-start border-4 border-primary ps-2 mb-3">📝 Mô tả chi tiết</h5>
+            <div class="bg-white border rounded-4 shadow-sm p-4 mb-5" style="line-height:1.8;">
+                @Html.Raw(Model.Description?.Replace("\n", "<br>").Replace("<p>", "<p class='mb-2'>"))
             </div>
         </div>
-    </div>
 
-    <!-- Mô tả -->
-    <div class="mt-5">
-        <h4 class="fw-semibold mb-3 text-dark">Mô tả chi tiết</h4>
-        <div class="bg-light p-4 rounded shadow-sm" style="line-height:1.7;">
-            @Html.Raw(Model.Description?.Replace("\n", "<br>"))
+        <!-- CỘT PHẢI: THÔNG TIN NGƯỜI ĐĂNG -->
+        <!-- CỘT PHẢI: THÔNG TIN NGƯỜI ĐĂNG -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 sticky-top user-card" style="top: 90px;">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="/images/avt/user.png" class="rounded-circle me-3" width="55" height="55" />
+                    <div>
+                        <h6 class="fw-semibold mb-1">
+                            <a asp-controller="User" asp-action="Profile" asp-route-userId="@Model.UserID"
+                               class="text-decoration-none fw-semibold text-dark">
+                                @Model.User?.FullName
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-0">Tham gia từ @Model.User?.CreateAt.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+
+                <hr class="my-2" />
+
+                <div class="text-center mt-2">
+                    <p class="fw-semibold text-secondary small mb-1">📞 Liên hệ</p>
+                    <h5 class="fw-bold text-primary mb-0">
+                        @{
+                            string? phone = Model.ContactPhone ?? Model.User?.Phone;
+                            if (string.IsNullOrEmpty(phone))
+                            {
+                                @:Không có số
+                            }
+                            else if (User.Identity.IsAuthenticated)
+                            {
+                                @phone
+                            }
+                            else
+                            {
+                                var masked = phone.Length >= 7 ? phone.Substring(0, 5) + "xx ***" : "Ẩn số";
+                                @masked
+                            }
+                        }
+                    </h5>
+                </div>
+            </div>
         </div>
+
     </div>
 </div>
 
+<!-- STYLE -->
 <style>
-    .carousel-inner img {
-        border-radius: 8px;
+    /* --- ẢNH & THUMBNAIL --- */
+    .thumbnail-img {
+        border: 2px solid transparent;
+        transition: all 0.25s ease;
     }
 
-    .card ul li i {
-        width: 20px;
+        .thumbnail-img:hover,
+        .thumbnail-img.active-thumb {
+            border-color: #0d6efd;
+            transform: scale(1.05);
+        }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.4);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        padding: 8px 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s ease;
     }
 
-    .card:hover {
-        transform: translateY(-3px);
-        transition: 0.2s;
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .nav-btn.left {
+            left: 10px;
+        }
+
+        .nav-btn.right {
+            right: 10px;
+        }
+
+    /* --- CARD NGƯỜI ĐĂNG --- */
+    .card {
+        transition: all 0.3s ease;
     }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+    .text-primary {
+        color: #0077cc !important;
+    }
+
+    .fw-bold.text-primary {
+        font-size: 1.4rem;
+        letter-spacing: 0.5px;
+    }
+    .user-card {
+    max-width: 330px; /* Giới hạn chiều rộng */
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    border-radius: 12px;
+}
+
+.user-card h6 {
+    font-size: 1rem;
+}
+
+.user-card p {
+    font-size: 0.85rem;
+}
+
+.user-card h5 {
+    font-size: 1.2rem;
+    color: #0078d7;
+}
+
+.user-card img {
+    border: 2px solid #e9ecef;
+}
+
+@@media (max-width: 992px) {
+    .user-card {
+        max-width: 100%;
+        margin-top: 20px;
+    }
+}
+
 </style>
+
+@section Scripts {
+    <script>
+        let currentIndex = 0;
+        const images = Array.from(document.querySelectorAll(".thumbnail-img"));
+        const mainImage = document.getElementById("mainImage");
+
+        function updateMainImage(index) {
+            if (index < 0 || index >= images.length) return;
+            currentIndex = index;
+            mainImage.src = images[index].src;
+            images.forEach(img => img.classList.remove("active-thumb"));
+            images[index].classList.add("active-thumb");
+        }
+
+        document.getElementById("prevBtn")?.addEventListener("click", () => {
+            updateMainImage((currentIndex - 1 + images.length) % images.length);
+        });
+        document.getElementById("nextBtn")?.addEventListener("click", () => {
+            updateMainImage((currentIndex + 1) % images.length);
+        });
+
+        images.forEach((img, idx) => img.addEventListener("click", () => updateMainImage(idx)));
+
+        if (images.length > 0) updateMainImage(0);
+    </script>
+}

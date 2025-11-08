@@ -22,15 +22,42 @@ namespace bds.Controllers
         // --- 1. DANH SÁCH BÀI ĐĂNG ---
         public async Task<IActionResult> Index()
         {
-            var post = await _context.Posts
+            // 🌟 Lấy các bài đăng nổi bật
+            var featuredPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.ClickCount)
+                .Take(5)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.Category)
                 .Include(p => p.CommuneWard.District.Province)
-                .OrderByDescending(p => p.CreateAt)
+                .Include(p => p.User) // ✅ Thêm để lấy thông tin người đăng
                 .ToListAsync();
 
-            return View(post);
+            ViewBag.FeaturedPosts = featuredPosts;
+
+            // ❤️ Lấy danh sách bài đã yêu thích
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<int> favoriteIds = new();
+
+            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+            {
+                favoriteIds = await _context.Prefereds
+                    .Where(p => p.UserID == userId && p.PostID != null)
+                    .Select(p => p.PostID!.Value)
+                    .ToListAsync();
+            }
+
+            ViewBag.FavoritePostIds = favoriteIds;
+
+            // 📋 Lấy tất cả bài đăng đã duyệt
+            var allPosts = await _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.CreateAt)
+                .Include(p => p.User) // ✅ Lấy thông tin người đăng
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.CommuneWard.District.Province)
+                .ToListAsync();
+
+            return View(allPosts);
         }
 
         // --- 2. TRANG CHI TIẾT BÀI ĐĂNG ---
@@ -62,6 +89,15 @@ namespace bds.Controllers
         {
             ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
             ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
+
+            // ✅ Tự động điền số điện thoại người đăng
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId != null)
+            {
+                var user = _context.Users.FirstOrDefault(u => u.UserID == int.Parse(currentUserId));
+                ViewBag.UserPhone = user?.Phone ?? "";
+            }
+
             return View();
         }
 
@@ -69,7 +105,7 @@ namespace bds.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Title,Description,Location,Area,Price,CommuneID,CategoryID")] Post post,
+            [Bind("Title,Description,Location,Area,Price,CommuneID,CategoryID,ContactPhone")] Post post,
             List<IFormFile>? images)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -121,6 +157,7 @@ namespace bds.Controllers
             TempData["SuccessMessage"] = "Bài đăng của bạn đã được gửi thành công! Hãy chờ quản trị viên duyệt nhé.";
             return RedirectToAction("Create");
         }
+
 
         // --- 5. API lấy quận/huyện ---
         [HttpGet]

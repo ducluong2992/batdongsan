@@ -82,7 +82,9 @@ namespace bds.Controllers
         [HttpGet]
         public async Task<IActionResult> PostStatusChart()
         {
-            var data = await _context.Posts 
+
+            var data = await _context.Posts
+
                 .GroupBy(p => p.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToListAsync();

@@ -4,27 +4,27 @@
     var projects = ViewBag.PreferedProjects as IEnumerable<bds.Models.Project>;
 }
 
-<div class="container mt-4 mb-5">
+<div class="container mt-5 mb-5">
     <h2 class="mb-4 text-center text-primary fw-bold">
         <i class="bi bi-heart-fill text-danger"></i> Danh sách yêu thích
     </h2>
 
     <!-- Tabs -->
-    <ul class="nav nav-tabs justify-content-center fw-semibold" id="preferTabs" role="tablist">
+    <ul class="nav nav-tabs justify-content-center fw-semibold border-0 mb-4" id="preferTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">
+            <button class="nav-link active shadow-sm" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">
                 Tin đăng (@(posts?.Count() ?? 0))
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
+            <button class="nav-link shadow-sm" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
                 Dự án (@(projects?.Count() ?? 0))
             </button>
         </li>
     </ul>
 
     <!-- Content -->
-    <div class="tab-content mt-4" id="preferTabsContent">
+    <div class="tab-content" id="preferTabsContent">
 
         <!-- TAB: TIN ĐĂNG -->
         <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
@@ -33,16 +33,25 @@
                 <div class="row g-4">
                     @foreach (var p in posts)
                     {
-                        <div class="col-md-4">
-                            <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden">
+                                <a asp-controller="Post" asp-action="Details" asp-route-id="@p.PostID" class="stretched-link"></a>
                                 <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
                                      class="card-img-top rounded-top-4"
-                                     style="height:200px;object-fit:cover;" />
+                                     style="height:220px;object-fit:cover;" />
+
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold text-truncate">@p.Title</h5>
-                                    <p class="text-muted mb-2">@String.Format("{0:N0} ₫", p.Price)</p>
-                                    <a asp-controller="Post" asp-action="Details" asp-route-id="@p.PostID"
-                                       class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+                                    <h5 class="card-title fw-bold text-truncate text-dark">@p.Title</h5>
+                                    <p class="text-muted small mb-1">
+                                        📍 @p.Location
+                                    </p>
+                                    <p class="text-danger fw-semibold mb-2">
+                                        💰 @(p.Price.HasValue ? string.Format("{0:N0} ₫", p.Price) : "Thỏa thuận")
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center text-muted small">
+                                        <span><i class="bi bi-rulers"></i> @(p.Area ?? 0) m²</span>
+                                        <span><i class="bi bi-eye"></i> @p.ClickCount</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -62,18 +71,24 @@
                 <div class="row g-4">
                     @foreach (var p in projects)
                     {
-                        <div class="col-md-4">
-                            <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden">
+                                <a asp-controller="Project" asp-action="Details" asp-route-id="@p.ProjectID" class="stretched-link"></a>
                                 <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
                                      class="card-img-top rounded-top-4"
-                                     style="height:200px;object-fit:cover;" />
+                                     style="height:220px;object-fit:cover;" />
+
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold text-truncate">@p.ProjectName</h5>
-                                    <p class="text-muted mb-2">
+                                    <h5 class="card-title fw-bold text-truncate text-dark">@p.ProjectName</h5>
+                                    <p class="text-muted small mb-1">
                                         📍 @p.CommuneWard?.District?.DistrictName, @p.CommuneWard?.District?.Province?.ProvinceName
                                     </p>
-                                    <a asp-controller="Project" asp-action="Details" asp-route-id="@p.ProjectID"
-                                       class="btn btn-outline-primary w-100 rounded-pill">Xem chi tiết</a>
+                                    <p class="text-secondary small mb-2">
+                                        🕓 @p.CreateAt.ToString("dd/MM/yyyy")
+                                    </p>
+                                    <div class="text-end text-muted small">
+                                        👁️ @p.ClickCount
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -88,28 +103,49 @@
     </div>
 </div>
 
+<!-- CSS -->
 <style>
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
-        background-color: #0d6efd;
-        color: #fff;
-        border-radius: 10px 10px 0 0;
-    }
-
+    /* Tabs */
     .nav-tabs .nav-link {
         color: #0d6efd;
         border: none;
+        border-radius: 10px 10px 0 0;
+        margin: 0 5px;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+    }
+    .nav-tabs .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
+    .nav-tabs .nav-link:hover {
+        background-color: #e7f1ff;
+        color: #0a58ca;
     }
 
-        .nav-tabs .nav-link:hover {
-            background-color: #e8f0ff;
-        }
+    /* Card styling */
+    .post-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        cursor: pointer;
+    }
+    .post-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
 
     .card-title {
         font-size: 1.05rem;
     }
 
-    tr:hover {
-        background-color: #f0f8ff !important;
+    /* Responsive tweaks */
+    @@media (max-width: 767.98px) {
+        .card-title {
+            font-size: 1rem;
+        }
+        .nav-tabs .nav-link {
+            font-size: 0.9rem;
+            padding: 6px 10px;
+        }
     }
 </style>

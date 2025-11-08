@@ -76,6 +76,32 @@ namespace bds.Controllers
 
             return View();
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddFavoritePost(int postId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Json(new { success = false, message = "Vui lòng đăng nhập." });
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var existing = await _context.Prefereds
+                .FirstOrDefaultAsync(p => p.UserID == userId && p.PostID == postId);
+
+            bool isFavorited;
+            if (existing != null)
+            {
+                _context.Prefereds.Remove(existing);
+                isFavorited = false;
+            }
+            else
+            {
+                _context.Prefereds.Add(new Prefered { UserID = userId, PostID = postId });
+                isFavorited = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, isFavorited });
+        }
 
 
     }

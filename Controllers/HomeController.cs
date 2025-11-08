@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Security.Claims;
 using bds.Data;
 using bds.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,6 @@ namespace bds.Controllers
 
         public IActionResult Index()
         {
-            // Load danh sách tỉnh và loại hình (Category)
             ViewBag.Provinces = _context.Provinces
                 .OrderBy(p => p.ProvinceName)
                 .ToList();
@@ -33,8 +33,54 @@ namespace bds.Controllers
                 .OrderBy(c => c.CategoryName)
                 .ToList();
 
+            // 🔹 Top bài viết
+            var topPosts = _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.ClickCount)
+                .Take(6)
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.CommuneWard.District.Province)
+                .Include(p => p.User)
+                .ToList();
+
+            ViewBag.TopPosts = topPosts;
+
+            // 🔹 Top dự án
+            var topProjects = _context.Projects
+                .Where(p => p.Status == "Đã duyệt")
+                .OrderByDescending(p => p.ClickCount)
+                .Take(6)
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.User)
+                .ToList();
+
+            ViewBag.TopProjects = topProjects;
+
+            // ❤️ Lấy danh sách bài user đã yêu thích
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<int> favoriteIds = new();
+            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+            {
+                favoriteIds = _context.Prefereds
+                    .Where(p => p.UserID == userId && p.PostID != null)
+                    .Select(p => p.PostID!.Value)
+                    .ToList();
+            }
+            ViewBag.FavoritePostIds = favoriteIds;
+
+            // 🔹 Top tin tức
+            var topNews = _context.News
+                .OrderByDescending(n => n.ViewCount)
+                .Take(6)
+                .Include(n => n.Images.Take(1))
+                .Include(n => n.User)
+                .ToList();
+
+            ViewBag.TopNews = topNews;
+
             return View();
         }
+
 
         // --- API load Quận/Huyện theo Tỉnh ---
         [HttpGet]
@@ -59,6 +105,107 @@ namespace bds.Controllers
 
             return Json(communes);
         }
+
+        [HttpGet]
+        public IActionResult Search(int? ProvinceId, int? DistrictId, int? CommuneId, int? LoaiHinh, int? Gia)
+        {
+            // Giữ lại dữ liệu để hiển thị lại dropdown
+            ViewBag.Provinces = _context.Provinces.OrderBy(p => p.ProvinceName).ToList();
+            ViewBag.Categories = _context.Categories.OrderBy(c => c.CategoryName).ToList();
+
+            // ✅ Truyền thêm giá trị đã chọn để View hiển thị lại
+            ViewBag.SelectedProvinceId = ProvinceId;
+            ViewBag.SelectedDistrictId = DistrictId;
+            ViewBag.SelectedCommuneId = CommuneId;
+            ViewBag.SelectedLoaiHinh = LoaiHinh;
+            ViewBag.SelectedGia = Gia;
+
+            // --- Truy vấn bài đăng ---
+            var postsQuery = _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.User)
+                .Include(p => p.CommuneWard.District.Province)
+                .AsQueryable();
+
+            // --- Truy vấn dự án ---
+            var projectsQuery = _context.Projects
+                .Where(p => p.Status == "Đã duyệt")
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.User)
+                .Include(p => p.CommuneWard.District.Province)
+                .AsQueryable();
+
+            // --- Áp dụng điều kiện lọc ---
+            if (ProvinceId.HasValue)
+            {
+                postsQuery = postsQuery.Where(p => p.CommuneWard.District.ProvinceID == ProvinceId);
+                projectsQuery = projectsQuery.Where(p => p.CommuneWard.District.ProvinceID == ProvinceId);
+            }
+
+            if (DistrictId.HasValue)
+            {
+                postsQuery = postsQuery.Where(p => p.CommuneWard.DistrictID == DistrictId);
+                projectsQuery = projectsQuery.Where(p => p.CommuneWard.DistrictID == DistrictId);
+            }
+
+            if (CommuneId.HasValue)
+            {
+                postsQuery = postsQuery.Where(p => p.CommuneID == CommuneId);
+                projectsQuery = projectsQuery.Where(p => p.CommuneID == CommuneId);
+            }
+
+            if (LoaiHinh.HasValue)
+            {
+                postsQuery = postsQuery.Where(p => p.CategoryID == LoaiHinh);
+            }
+
+            if (Gia.HasValue)
+            {
+                switch (Gia)
+                {
+                    case 1:
+                        postsQuery = postsQuery.Where(p => p.Price < 1_000_000_000); // < 1 tỷ
+                        break;
+                    case 2:
+                        postsQuery = postsQuery.Where(p => p.Price >= 1_000_000_000 && p.Price < 3_000_000_000);
+                        break;
+                    case 3:
+                        postsQuery = postsQuery.Where(p => p.Price >= 3_000_000_000 && p.Price < 5_000_000_000);
+                        break;
+                    case 4:
+                        postsQuery = postsQuery.Where(p => p.Price >= 5_000_000_000 && p.Price < 10_000_000_000);
+                        break;
+                    case 5:
+                        postsQuery = postsQuery.Where(p => p.Price >= 10_000_000_000);
+                        break;
+                }
+            }
+
+            // --- Lấy danh sách kết quả ---
+            var resultPosts = postsQuery.ToList();
+            var resultProjects = projectsQuery.ToList();
+
+            // ❤️ Lấy danh sách bài user đã yêu thích (để hiển thị tim đỏ)
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<int> favoriteIds = new();
+            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+            {
+                favoriteIds = _context.Prefereds
+                    .Where(p => p.UserID == userId && p.PostID != null)
+                    .Select(p => p.PostID!.Value)
+                    .ToList();
+            }
+            ViewBag.FavoritePostIds = favoriteIds;
+
+            // --- Trả kết quả ---
+            ViewBag.ResultPosts = resultPosts;
+            ViewBag.ResultProjects = resultProjects;
+
+            return View("Search");
+        }
+
+
     }
 }
 

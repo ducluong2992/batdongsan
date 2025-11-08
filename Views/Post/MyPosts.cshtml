@@ -4,143 +4,217 @@
     ViewData["Title"] = "Quản lý tin của tôi";
     var approved = Model.Where(p => p.Status == "Đã duyệt");
     var pending = Model.Where(p => p.Status == "Chờ duyệt");
-    var rejected = Model.Where(p => p.Status == "Bị từ chối");
+    var rejected = Model.Where(p => p.Status == "Không duyệt");
 }
 
-<div class="container mt-4">
-    <h2 class="mb-3 text-center">Quản lý tin của tôi</h2>
+<div class="container mt-5 mb-5">
+    <h2 class="text-center fw-bold text-primary mb-4">
+        <i class="bi bi-journal-text"></i> Quản lý tin của tôi
+    </h2>
 
-    <ul class="nav nav-tabs" id="myPostTabs" role="tablist">
-        <li class="nav-item" role="presentation">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs justify-content-center fw-semibold border-0 mb-4" id="myPostTabs" role="tablist">
+        <li class="nav-item">
             <button class="nav-link active" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">
-                Đã duyệt
+                ✅ Đã duyệt (@approved.Count())
             </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li class="nav-item">
             <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
-                Chờ duyệt
+                ⏳ Chờ duyệt (@pending.Count())
             </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li class="nav-item">
             <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
-                Bị từ chối
+                ❌ Bị từ chối (@rejected.Count())
             </button>
         </li>
     </ul>
 
-    <div class="tab-content mt-3" id="myPostTabContent">
-        <!-- Đã duyệt -->
+    <div class="tab-content" id="myPostTabContent">
+
+        <!-- ✅ ĐÃ DUYỆT -->
         <div class="tab-pane fade show active" id="approved" role="tabpanel">
             @if (!approved.Any())
             {
-                <p class="text-muted text-center mt-3">Bạn chưa có bài đăng nào được duyệt.</p>
+                <p class="text-muted text-center mt-4">Bạn chưa có bài đăng nào được duyệt.</p>
             }
             else
             {
-                <table class="table table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Ảnh</th>
-                            <th>Tiêu đề</th>
-                            <th>Giá</th>
-                            <th>Diện tích</th>
-                            <th>Ngày đăng</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var post in approved)
-                        {
-                            <tr>
-                                <td><img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")" width="100" /></td>
-                                <td>@post.Title</td>
-                                <td>@String.Format("{0:N0} ₫", post.Price)</td>
-                                <td>@post.Area m²</td>
-                                <td>@post.CreateAt.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <a asp-action="Details" asp-route-id="@post.PostID" class="btn btn-sm btn-primary">Xem</a>
-                                    <a asp-action="Edit" asp-route-id="@post.PostID" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-action="Delete" asp-route-id="@post.PostID" class="btn btn-sm btn-danger" onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <div class="row g-4">
+                    @foreach (var post in approved)
+                    {
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
+                                <!--  Có link chi tiết -->
+                                <a asp-action="Details" asp-route-id="@post.PostID">
+                                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                         class="card-img-top rounded-top-4"
+                                         style="height:220px;object-fit:cover;transition:0.3s;" />
+                                </a>
+
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-truncate mb-1">
+                                        <a asp-action="Details" asp-route-id="@post.PostID"
+                                           class="text-dark text-decoration-none hover-link">
+                                            @post.Title
+                                        </a>
+                                    </h5>
+
+                                    <p class="text-muted small mb-1">📍 @post.Location</p>
+                                    <p class="text-danger fw-semibold mb-1">
+                                        💰 @(post.Price.HasValue ? string.Format("{0:N0} ₫", post.Price) : "Thỏa thuận")
+                                    </p>
+                                    <p class="text-muted small mb-3">
+                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
+                                    </p>
+
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="Edit" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-warning rounded-pill">Sửa</a>
+                                        <a asp-action="Delete" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-danger rounded-pill"
+                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
+                                    </div>
+                                </div>
+
+                                <span class="badge bg-success position-absolute top-0 start-0 m-2 shadow">Đã duyệt</span>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
 
-        <!-- Chờ duyệt -->
+        <!--  CHỜ DUYỆT -->
         <div class="tab-pane fade" id="pending" role="tabpanel">
             @if (!pending.Any())
             {
-                <p class="text-muted text-center mt-3">Hiện bạn chưa có bài nào đang chờ duyệt.</p>
+                <p class="text-muted text-center mt-4">Bạn chưa có bài nào đang chờ duyệt.</p>
             }
             else
             {
-                <table class="table table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Ảnh</th>
-                            <th>Tiêu đề</th>
-                            <th>Giá</th>
-                            <th>Ngày đăng</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var post in pending)
-                        {
-                            <tr>
-                                <td><img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")" width="100" /></td>
-                                <td>@post.Title</td>
-                                <td>@String.Format("{0:N0} ₫", post.Price)</td>
-                                <td>@post.CreateAt.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <a asp-action="Edit" asp-route-id="@post.PostID" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-action="Delete" asp-route-id="@post.PostID" class="btn btn-sm btn-danger" onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <div class="row g-4">
+                    @foreach (var post in pending)
+                    {
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
+                                <!--  Không gán link -->
+                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                     class="card-img-top rounded-top-4"
+                                     style="height:220px;object-fit:cover;opacity:0.9;" />
+
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
+                                    <p class="text-muted small mb-1">📍 @post.Location</p>
+                                    <p class="text-danger fw-semibold mb-1">
+                                        💰 @(post.Price.HasValue ? string.Format("{0:N0} ₫", post.Price) : "Thỏa thuận")
+                                    </p>
+                                    <p class="text-muted small mb-3">
+                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
+                                    </p>
+
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="Edit" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-warning rounded-pill">Sửa</a>
+                                        <a asp-action="Delete" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-danger rounded-pill"
+                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
+                                    </div>
+                                </div>
+
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2 shadow">Chờ duyệt</span>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
 
-        <!-- Bị từ chối -->
+        <!--  BỊ TỪ CHỐI -->
         <div class="tab-pane fade" id="rejected" role="tabpanel">
             @if (!rejected.Any())
             {
-                <p class="text-muted text-center mt-3">Không có bài nào bị từ chối.</p>
+                <p class="text-muted text-center mt-4">Không có bài nào bị từ chối.</p>
             }
             else
             {
-                <table class="table table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Ảnh</th>
-                            <th>Tiêu đề</th>
-                            <th>Lý do bị từ chối</th>
-                            <th>Ngày đăng</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var post in rejected)
-                        {
-                            <tr>
-                                <td><img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")" width="100" /></td>
-                                <td>@post.Title</td>
-                                <td class="text-danger">@post.RejectReason</td>
-                                <td>@post.CreateAt.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <a asp-action="Edit" asp-route-id="@post.PostID" class="btn btn-sm btn-secondary">Sửa lại</a>
-                                    <a asp-action="Delete" asp-route-id="@post.PostID" class="btn btn-sm btn-danger" onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <div class="row g-4">
+                    @foreach (var post in rejected)
+                    {
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
+                                <!--  Không gán link -->
+                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                     class="card-img-top rounded-top-4"
+                                     style="height:220px;object-fit:cover;opacity:0.9;" />
+
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
+                                    <p class="text-danger small mb-2">
+                                        ❗ Lý do: @post.RejectReason
+                                    </p>
+                                    <p class="text-muted small mb-3">
+                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
+                                    </p>
+
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="Edit" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-secondary rounded-pill">Sửa lại</a>
+                                        <a asp-action="Delete" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-danger rounded-pill"
+                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
+                                    </div>
+                                </div>
+
+                                <span class="badge bg-danger position-absolute top-0 start-0 m-2 shadow">Từ chối</span>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
     </div>
 </div>
+
+<style>
+    .nav-tabs .nav-link {
+        color: #0d6efd;
+        border: none;
+        margin: 0 6px;
+        border-radius: 10px 10px 0 0;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    .nav-tabs .nav-link.active {
+        background-color: #0d6efd;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
+
+    .post-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    .post-card:hover img {
+        transform: scale(1.03);
+    }
+
+    .hover-link:hover {
+        color: #0d6efd !important;
+        text-decoration: underline;
+    }
+
+    @@media (max-width: 768px) {
+        .card-body h5 {
+            font-size: 1rem;
+        }
+        .nav-tabs .nav-link {
+            font-size: 0.9rem;
+            padding: 6px 10px;
+        }
+    }
+</style>

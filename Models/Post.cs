@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+using static System.Net.Mime.MediaTypeNames;
+
+
 namespace bds.Models
 {
     [Table("Post")]
@@ -32,8 +35,14 @@ namespace bds.Models
         [StringLength(255)]
         public string? RejectReason { get; set; }
 
+        [StringLength(10, ErrorMessage = "Số điện thoại phải có 10 số")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại không hợp lệ")]
+        public string? ContactPhone { get; set; }
+
+
         // --- KHÓA NGOẠI ---
         [ForeignKey(nameof(User))]
+
         public int? UserID { get; set; }
 
         [ForeignKey(nameof(CommuneWard))]
@@ -42,6 +51,7 @@ namespace bds.Models
         [ForeignKey(nameof(Category))]
         public int? CategoryID { get; set; }
 
+
         // --- QUAN HỆ ---
         public virtual User? User { get; set; }
         public virtual CommuneWard? CommuneWard { get; set; }
@@ -49,5 +59,6 @@ namespace bds.Models
 
         // Một bài đăng có thể có nhiều ảnh
         public virtual ICollection<Image>? Images { get; set; }
+
     }
 }
