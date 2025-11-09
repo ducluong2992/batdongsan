@@ -56,17 +56,29 @@ namespace bds.Controllers
 
             ViewBag.TopProjects = topProjects;
 
-            // ❤️ Lấy danh sách bài user đã yêu thích
+            // --- Lấy UserID hiện tại ---
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            List<int> favoriteIds = new();
+            List<int> favoritePostIds = new();
+            List<int> favoriteProjectIds = new();
+
             if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
             {
-                favoriteIds = _context.Prefereds
+                // ❤️ Lấy danh sách bài post đã tym
+                favoritePostIds = _context.Prefereds
                     .Where(p => p.UserID == userId && p.PostID != null)
-                    .Select(p => p.PostID!.Value)
+                    .Select(p => p.PostID.Value)
+                    .ToList();
+
+                // ❤️ Lấy danh sách project đã tym
+                favoriteProjectIds = _context.Prefereds
+                    .Where(p => p.UserID == userId && p.ProjectID != null)
+                    .Select(p => p.ProjectID.Value)
                     .ToList();
             }
-            ViewBag.FavoritePostIds = favoriteIds;
+
+            ViewBag.FavoritePostIds = favoritePostIds;
+            ViewBag.FavoriteProjectIds = favoriteProjectIds;
+
 
             // 🔹 Top tin tức
             var topNews = _context.News

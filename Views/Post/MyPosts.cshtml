@@ -5,6 +5,7 @@
     var approved = Model.Where(p => p.Status == "Đã duyệt");
     var pending = Model.Where(p => p.Status == "Chờ duyệt");
     var rejected = Model.Where(p => p.Status == "Không duyệt");
+    var expired = Model.Where(p => p.Status == "Hết hạn");
 }
 
 <div class="container mt-5 mb-5">
@@ -29,6 +30,11 @@
                 ❌ Bị từ chối (@rejected.Count())
             </button>
         </li>
+        <li class="nav-item">
+            <button class="nav-link" id="expired-tab" data-bs-toggle="tab" data-bs-target="#expired" type="button" role="tab">
+                ⏰ Hết hạn (@expired.Count())
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content" id="myPostTabContent">
@@ -46,7 +52,6 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!--  Có link chi tiết -->
                                 <a asp-action="Details" asp-route-id="@post.PostID">
                                     <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                          class="card-img-top rounded-top-4"
@@ -60,14 +65,11 @@
                                             @post.Title
                                         </a>
                                     </h5>
-
                                     <p class="text-muted small mb-1">📍 @post.Location</p>
                                     <p class="text-danger fw-semibold mb-1">
                                         💰 @(post.Price.HasValue ? string.Format("{0:N0} ₫", post.Price) : "Thỏa thuận")
                                     </p>
-                                    <p class="text-muted small mb-3">
-                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
-                                    </p>
+                                    <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
 
                                     <div class="d-flex justify-content-between">
                                         <a asp-action="Edit" asp-route-id="@post.PostID"
@@ -77,7 +79,6 @@
                                            onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
                                     </div>
                                 </div>
-
                                 <span class="badge bg-success position-absolute top-0 start-0 m-2 shadow">Đã duyệt</span>
                             </div>
                         </div>
@@ -86,7 +87,7 @@
             }
         </div>
 
-        <!--  CHỜ DUYỆT -->
+        <!-- ⏳ CHỜ DUYỆT -->
         <div class="tab-pane fade" id="pending" role="tabpanel">
             @if (!pending.Any())
             {
@@ -99,7 +100,6 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!--  Không gán link -->
                                 <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;opacity:0.9;" />
@@ -110,9 +110,7 @@
                                     <p class="text-danger fw-semibold mb-1">
                                         💰 @(post.Price.HasValue ? string.Format("{0:N0} ₫", post.Price) : "Thỏa thuận")
                                     </p>
-                                    <p class="text-muted small mb-3">
-                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
-                                    </p>
+                                    <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
 
                                     <div class="d-flex justify-content-between">
                                         <a asp-action="Edit" asp-route-id="@post.PostID"
@@ -131,7 +129,7 @@
             }
         </div>
 
-        <!--  BỊ TỪ CHỐI -->
+        <!-- ❌ BỊ TỪ CHỐI -->
         <div class="tab-pane fade" id="rejected" role="tabpanel">
             @if (!rejected.Any())
             {
@@ -144,30 +142,43 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <!--  Không gán link -->
                                 <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;opacity:0.9;" />
-
                                 <div class="card-body">
                                     <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
-                                    <p class="text-danger small mb-2">
-                                        ❗ Lý do: @post.RejectReason
-                                    </p>
-                                    <p class="text-muted small mb-3">
-                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
-                                    </p>
-
-                                    <div class="d-flex justify-content-between">
-                                        <a asp-action="Edit" asp-route-id="@post.PostID"
-                                           class="btn btn-sm btn-outline-secondary rounded-pill">Sửa lại</a>
-                                        <a asp-action="Delete" asp-route-id="@post.PostID"
-                                           class="btn btn-sm btn-outline-danger rounded-pill"
-                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
-                                    </div>
+                                    <p class="text-danger small mb-2">❗ Lý do: @post.RejectReason</p>
+                                    <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
                                 </div>
-
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-2 shadow">Từ chối</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- ⏰ HẾT HẠN -->
+        <div class="tab-pane fade" id="expired" role="tabpanel">
+            @if (!expired.Any())
+            {
+                <p class="text-muted text-center mt-4">Không có bài nào đã hết hạn.</p>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var post in expired)
+                    {
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card opacity-75">
+                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                     class="card-img-top rounded-top-4 grayscale"
+                                     style="height:220px;object-fit:cover;opacity:0.8;" />
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
+                                    <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
+                                </div>
+                                <span class="badge bg-secondary position-absolute top-0 start-0 m-2 shadow">Hết hạn</span>
                             </div>
                         </div>
                     }
@@ -186,35 +197,28 @@
         background-color: #f8f9fa;
         transition: all 0.2s ease;
     }
-    .nav-tabs .nav-link.active {
-        background-color: #0d6efd;
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
-    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #0d6efd;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+        }
 
     .post-card {
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    .post-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-    }
-    .post-card:hover img {
-        transform: scale(1.03);
-    }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
 
     .hover-link:hover {
         color: #0d6efd !important;
         text-decoration: underline;
     }
 
-    @@media (max-width: 768px) {
-        .card-body h5 {
-            font-size: 1rem;
-        }
-        .nav-tabs .nav-link {
-            font-size: 0.9rem;
-            padding: 6px 10px;
-        }
+    .grayscale {
+        filter: grayscale(100%);
     }
 </style>

@@ -70,7 +70,8 @@
                             <th>Thể loại</th>
                             <th>Lượt xem</th>
                             <th>Lượt tym</th>
-                            <th>Thời gian</th>
+                            <th>Ngày đăng</th>
+                            <th>Thời gian còn lại</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -185,44 +186,54 @@
 </script>
 
 <script>
-        $(document).ready(function () {
+    $(document).ready(function () {
         $.getJSON('/Analysis_Evaluation/GetPostPerformance', function (data) {
             if (data.error) {
                 $('#performanceTable tbody').html(
-                    `<tr><td colspan="5" class="text-danger">${data.error}</td></tr>`
+                    `<tr><td colspan="6" class="text-danger">${data.error}</td></tr>`
                 );
                 return;
             }
 
             if (!data || data.length === 0) {
                 $('#performanceTable tbody').html(
-                    '<tr><td colspan="5" class="text-muted">Không có dữ liệu.</td></tr>'
+                    '<tr><td colspan="6" class="text-muted">Không có dữ liệu.</td></tr>'
                 );
                 return;
             }
 
             renderTable(data);
 
-            // Lọc
+            // Bộ lọc
             $('#categoryFilter').change(function () {
                 const val = $(this).val();
                 if (val === 'all') renderTable(data);
                 else renderTable(data.filter(d => d.category === val));
             });
 
-            // Hủy lọc
             $('#resetFilter').click(function () {
                 $('#categoryFilter').val('all');
                 renderTable(data);
             });
         });
 
+        // ===============================
+        // Hàm hiển thị dữ liệu ra bảng
+        // ===============================
         function renderTable(rows) {
             const tbody = $('#performanceTable tbody');
             tbody.empty();
 
-            rows.forEach(r => {
+            if (!rows || rows.length === 0) {
+                tbody.html('<tr><td colspan="6" class="text-muted">Không có dữ liệu.</td></tr>');
+                return;
+            }
+
+            rows.forEach((r, i) => {
                 const badgeColor = r.category === "Post" ? "primary" : "success";
+                const id = `timer-${i}`;
+                const expire = r.expireAt && !isNaN(Date.parse(r.expireAt)) ? r.expireAt : null;
+
                 tbody.append(`
                     <tr>
                         <td class="text-start">${r.name}</td>
@@ -230,11 +241,54 @@
                         <td>${r.clickCount}</td>
                         <td>${r.likeCount}</td>
                         <td>${r.createdAt}</td>
+                        <td><span id="${id}" class="fw-semibold text-danger"></span></td>
                     </tr>
                 `);
+
+                if (expire) startCountdown(id, expire);
+                else $(`#${id}`).text('N/A').removeClass('text-danger').addClass('text-muted');
             });
         }
-    });
 
+        // ===============================
+        // Hàm đếm ngược thời gian
+        // ===============================
+            function startCountdown(elementId, expireAtStr) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+
+        const expireAt = Date.parse(expireAtStr);
+        if (isNaN(expireAt)) {
+            el.innerHTML = "N/A";
+            el.classList.replace("text-danger", "text-muted");
+            return;
+        }
+
+        let interval; // ✅ khai báo trước khi dùng trong updateCountdown()
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = expireAt - now;
+
+            if (diff <= 0) {
+                el.innerHTML = "Hết hạn";
+                el.classList.replace("text-danger", "text-muted");
+                clearInterval(interval);
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            el.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        updateCountdown(); // chạy ngay lần đầu
+        interval = setInterval(updateCountdown, 1000); // ✅ gán sau khi định nghĩa
+    }
+
+    });
 </script>
 

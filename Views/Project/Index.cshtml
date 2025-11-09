@@ -29,6 +29,7 @@
                     {
                         var favorited = favoritedIds.Contains(item.ProjectID);
                         var heartClass = favorited ? "bi-heart-fill text-danger" : "bi-heart";
+
                         <div class="col-md-6 mb-4">
                             <div class="card h-100 shadow-sm border-0 project-card position-relative">
                                 <a asp-action="Details" asp-route-id="@item.ProjectID">
@@ -36,14 +37,16 @@
                                          class="card-img-top rounded-top"
                                          style="height: 200px; object-fit: cover;" alt="@item.ProjectName" />
                                 </a>
+
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title fw-bold text-truncate">
                                         <a asp-action="Details" asp-route-id="@item.ProjectID" class="text-decoration-none text-dark stretched-link">
                                             @item.ProjectName
                                         </a>
                                     </h5>
+
                                     <p class="card-text text-muted small mb-2">
-                                        📍 @item.CommuneWard?.CommuneName,@item.CommuneWard?.District?.DistrictName, @item.CommuneWard?.District?.Province?.ProvinceName
+                                        📍 @item.CommuneWard?.CommuneName,@item.CommuneWard?.District?.DistrictName,@item.CommuneWard?.District?.Province?.ProvinceName
                                     </p>
 
                                     @{
@@ -75,19 +78,23 @@
                                                 Xem chi tiết →
                                             </a>
                                         </small>
-                                        <div>
-                                            <a asp-action="Details" asp-route-id="@item.ProjectID" class="btn btn-sm btn-outline-primary">Xem</a>
 
-                                            <!-- Gắn style để nằm trên overlay -->
-                                            <button class="btn btn-sm btn-outline-danger favorite-btn position-relative"
+                                        <!-- Khu vực người đăng + tym -->
+                                        <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-3">
+                                            <div class="d-flex align-items-center">
+                                                <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32" />
+                                                <div class="small fw-semibold">
+                                                    <span class="text-dark">@item.User?.FullName</span>
+                                                </div>
+                                            </div>
+
+                                            <button class="btn btn-sm btn-outline-danger favorite-btn"
                                                     data-projectid="@item.ProjectID"
                                                     style="z-index:1050;">
                                                 <i class="bi @heartClass"></i>
                                             </button>
-
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>

@@ -10,6 +10,7 @@
     var approved = Model.Where(p => p.Status == "Đã duyệt").ToList();
     var pending = Model.Where(p => p.Status == "Chờ duyệt").ToList();
     var rejected = Model.Where(p => p.Status == "Không duyệt").ToList();
+    var expired = Model.Where(p => p.Status == "Hết hạn").ToList();
 }
 
 <div class="container mt-4">
@@ -32,6 +33,12 @@
                 ❌ Bị từ chối <span class="badge bg-danger ms-1">@rejected.Count</span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="expired-tab" data-bs-toggle="tab" data-bs-target="#expired" type="button" role="tab">
+                ⏰ Hết hạn <span class="badge bg-secondary ms-1">@expired.Count</span>
+            </button>
+        </li>
+
     </ul>
 
     <!-- TAB CONTENT -->
@@ -136,6 +143,43 @@
                 </table>
             }
         </div>
+
+        <!-- HẾT HẠN -->
+        <div class="tab-pane fade" id="expired" role="tabpanel">
+            @if (!expired.Any())
+            {
+                <p class="text-muted text-center mt-3">Không có dự án nào đã hết hạn.</p>
+            }
+            else
+            {
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên dự án</th>
+                            <th>Địa điểm</th>
+                            <th>Ngày đăng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var project in expired)
+                        {
+                            <tr class="opacity-75">
+                                <td>
+                                    <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                         width="100"
+                                         class="rounded shadow-sm grayscale" />
+                                </td>
+                                <td>@project.ProjectName</td>
+                                <td>@project.CommuneWard?.CommuneName, @project.CommuneWard?.District?.DistrictName</td>
+                                <td>@project.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
     </div>
 </div>
 
@@ -149,6 +193,13 @@
     tr:hover {
         background-color: #f0f8ff !important;
     }
+
+
+    /* Làm mờ ảnh bài hết hạn */
+    .grayscale {
+        filter: grayscale(100%);
+    }
+
 </style>
 @section Scripts {
     <script>

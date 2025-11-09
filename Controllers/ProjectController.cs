@@ -52,6 +52,7 @@ namespace bds.Controllers
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
                 .Include(p => p.Images.Take(1))
+                 .Include(p => p.User) // <= thêm dòng này
                 .Include(p => p.CommuneWard.District.Province) // cập nhật
                 .ToListAsync();
 
