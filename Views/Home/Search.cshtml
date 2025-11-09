@@ -13,13 +13,10 @@
             <option value="">Tỉnh/Thành</option>
             @foreach (var p in ViewBag.Provinces)
             {
-                <option value="@p.ProvinceID"
-                    @if (ViewBag.SelectedProvinceId != null && ViewBag.SelectedProvinceId == p.ProvinceID)
-                    {
-                        <text>selected</text>
-                    }>
+                <option value="@p.ProvinceID" @(ViewBag.SelectedProvinceId == p.ProvinceID ? "selected" : "")>
                     @p.ProvinceName
                 </option>
+
             }
         </select>
 
@@ -30,11 +27,7 @@
             {
                 foreach (var d in ViewBag.Districts)
                 {
-                    <option value="@d.DistrictID"
-                        @if (ViewBag.SelectedDistrictId != null && ViewBag.SelectedDistrictId == d.DistrictID)
-                        {
-                            <text>selected</text>
-                        }>
+                    <option value="@d.DistrictID" @(ViewBag.SelectedDistrictId == d.DistrictID ? "selected" : "")>
                         @d.DistrictName
                     </option>
                 }
@@ -48,11 +41,7 @@
             {
                 foreach (var c in ViewBag.Communes)
                 {
-                    <option value="@c.CommuneID"
-                        @if (ViewBag.SelectedCommuneId != null && ViewBag.SelectedCommuneId == c.CommuneID)
-                        {
-                            <text>selected</text>
-                        }>
+                    <option value="@c.CommuneID" @(ViewBag.SelectedCommuneId == c.CommuneID ? "selected" : "")>
                         @c.CommuneName
                     </option>
                 }
@@ -279,7 +268,40 @@
             });
         });
 
+        $(document).ready(function () {
+            // Khi chọn Tỉnh => load lại Quận
+            $('#ProvinceDropdown').change(function () {
+                var provinceId = $(this).val();
+                var districtDropdown = $('#DistrictDropdown');
+                var communeDropdown = $('#CommuneDropdown');
 
+                districtDropdown.empty().append('<option value="">Quận/Huyện</option>');
+                communeDropdown.empty().append('<option value="">Phường/Xã</option>');
+
+                if (provinceId) {
+                    $.getJSON('/Home/GetDistrictsByProvinceId', { provinceId: provinceId }, function (data) {
+                        $.each(data, function (i, d) {
+                            districtDropdown.append(`<option value="${d.id}">${d.name}</option>`);
+                        });
+                    });
+                }
+            });
+
+            // Khi chọn Quận => load lại Xã
+            $('#DistrictDropdown').change(function () {
+                var districtId = $(this).val();
+                var communeDropdown = $('#CommuneDropdown');
+                communeDropdown.empty().append('<option value="">Phường/Xã</option>');
+
+                if (districtId) {
+                    $.getJSON('/Home/GetCommunesByDistrictId', { districtId: districtId }, function (data) {
+                        $.each(data, function (i, c) {
+                            communeDropdown.append(`<option value="${c.id}">${c.name}</option>`);
+                        });
+                    });
+                }
+            });
+        });
 
 
     </script>

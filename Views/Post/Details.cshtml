@@ -59,6 +59,45 @@
         <!-- CỘT PHẢI: THÔNG TIN NGƯỜI ĐĂNG -->
         <!-- CỘT PHẢI: THÔNG TIN NGƯỜI ĐĂNG -->
         <div class="col-lg-4">
+            <!-- 🌟 BÀI ĐĂNG LIÊN QUAN -->
+            <div class="p-3 bg-light rounded shadow-sm mb-4" style="position: sticky; top: 20px;">
+                <h5 class="fw-bold mb-3 text-center text-primary">🗂️ Bài đăng liên quan</h5>
+
+                @if (ViewBag.RelatedPosts != null && ((List<bds.Models.Post>)ViewBag.RelatedPosts).Any())
+                {
+                    var relatedPosts = (List<bds.Models.Post>)ViewBag.RelatedPosts;
+
+                    <div class="list-group">
+                        @foreach (var post in relatedPosts)
+                        {
+                            <a asp-action="Details" asp-route-id="@post.PostID"
+                               class="list-group-item list-group-item-action border-0 border-bottom px-2 py-3 d-flex align-items-start">
+                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                     alt="@post.Title"
+                                     class="me-3 rounded-3 shadow-sm"
+                                     style="width: 90px; height: 70px; object-fit: cover;">
+                                <div class="flex-fill">
+                                    <div class="fw-bold text-dark sidebar-title" title="@post.Title">
+                                        @post.Title
+                                    </div>
+                                    <div class="text-muted small sidebar-location mb-1" title="@post.Location">
+                                        📍 @post.Location
+                                    </div>
+                                    <div class="text-secondary small">
+                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy") &nbsp; | &nbsp; 👁️ @post.ClickCount
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Chưa có bài đăng liên quan nào.</p>
+                }
+            </div>
+            <!--Thong tin nguoi dang-->
+
             <div class="card border-0 shadow-sm rounded-4 p-3 sticky-top user-card" style="top: 90px;">
                 <div class="d-flex align-items-center mb-3">
                     <img src="/images/avt/user.png" class="rounded-circle me-3" width="55" height="55" />

@@ -80,6 +80,21 @@ namespace bds.Controllers
             _context.Update(post);
             await _context.SaveChangesAsync();
 
+            // 🌟 Lấy danh sách bài đăng liên quan
+            var relatedPosts = await _context.Posts
+                .Where(p => p.Status == "Đã duyệt"
+                         && p.PostID != id
+                         && (p.CategoryID == post.CategoryID    // cùng loại nhà
+                             || p.CommuneWard.DistrictID == post.CommuneWard.DistrictID)) // hoặc cùng khu vực
+                .OrderByDescending(p => p.CreateAt)
+                .Take(3)
+                .Include(p => p.Images.Take(1))
+                .Include(p => p.CommuneWard.District.Province)
+                .Include(p => p.User)
+                .ToListAsync();
+
+            ViewBag.RelatedPosts = relatedPosts;
+
             return View(post);
         }
 
