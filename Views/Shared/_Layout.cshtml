@@ -1,4 +1,6 @@
-﻿@{
+﻿@using System.Security.Claims
+@inject bds.Data.ApplicationDbContext _context
+@{
     Layout = null;
 }
 
@@ -195,6 +197,53 @@
                             <a class="nav-link text-white @(ViewData["Title"]?.ToString() == "Phân tích đánh giá" ? "active-link" : "")"
                                asp-controller="Analysis_Evaluation" asp-action="Index">Phân tích & Đánh giá</a>
                         </li>
+                        @{
+                            int unreadCount = 0;
+                            if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+                                {
+                                    unreadCount = _context.Notifications.Count(n => !n.IsRead && n.UserID == userId);
+                                }
+                            }
+                        }
+
+                        <li class="nav-item position-relative">
+                            <a href="#" class="nav-link" id="notifToggle">
+                                <i class="bi bi-bell text-light"></i>
+                                @if (unreadCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">@unreadCount</span>
+                                }
+                            </a>
+                            <!-- 🔔 Popup thông báo -->
+                            <!-- 🔔 Popup thông báo -->
+                            <div id="notifPanel" class="notification-panel shadow-lg">
+                                <div class="header">
+                                    <h6>Thông báo</h6>
+                                    <button class="btn btn-sm btn-close-white" id="notifClose">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+
+                                <div class="d-flex border-bottom">
+                                    <button class="notif-tab flex-fill active" data-tab="all">Tất cả</button>
+                                    <button class="notif-tab flex-fill" data-tab="unread">Chưa đọc</button>
+                                </div>
+
+                                <div id="notifContent" class="notif-scroll">
+                                    <div class="p-3 text-center text-muted">Đang tải...</div>
+                                </div>
+
+                                <div class="footer">
+                                    <a asp-controller="Notification" asp-action="Index">Xem tất cả thông báo</a>
+                                </div>
+                            </div>
+
+                        </li>
+
+
                     </ul>
 
                     <!-- Menu phải -->
@@ -322,6 +371,153 @@
                 margin: 4px 0;
             }
         }
+
+        /* ===== 🔔 POPUP THÔNG BÁO CHUYÊN NGHIỆP ===== */
+.notification-panel {
+    position: absolute;
+    top: 52px; /* ngay dưới chuông */
+    right: 0;
+    width: 380px;
+    background-color: #fff;
+    border-radius: 14px;
+    display: none;
+    overflow: hidden;
+    z-index: 2000;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+    animation: notifSlideDown 0.25s ease-out;
+}
+
+/* Hiệu ứng mở mượt */
+@@keyframes notifSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Thanh đầu popup */
+.notification-panel .header {
+    background: linear-gradient(90deg, #005c99, #00bcd4);
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-panel .header h6 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.notification-panel .header button {
+    color: #fff;
+    opacity: 0.8;
+    transition: 0.2s;
+}
+
+.notification-panel .header button:hover {
+    opacity: 1;
+}
+
+/* Tabs “Tất cả” / “Chưa đọc” */
+.notif-tab {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 10px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.notif-tab.active {
+    color: #005c99;
+    border-bottom: 3px solid #005c99;
+}
+
+/* Danh sách thông báo */
+.notif-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+/* item từng thông báo */
+.notif-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f2f2f2;
+    transition: background 0.2s;
+}
+
+.notif-item:hover {
+    background-color: #f9f9f9;
+}
+
+.notif-item.bg-light {
+    background-color: #eef6ff;
+}
+
+.notif-text {
+    flex: 1;
+    margin-right: 8px;
+}
+
+.notif-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.notif-message {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 2px;
+}
+
+.notif-time {
+    font-size: 0.78rem;
+    color: #999;
+    margin-top: 4px;
+}
+
+.notif-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #0d6efd;
+    border-radius: 50%;
+    margin-top: 4px;
+}
+
+/* Footer */
+.notification-panel .footer {
+    border-top: 1px solid #eee;
+    text-align: center;
+    padding: 10px;
+    background-color: #fafafa;
+}
+
+.notification-panel .footer a {
+    font-weight: 600;
+    color: #005c99;
+    text-decoration: none;
+}
+
+.notification-panel .footer a:hover {
+    text-decoration: underline;
+}
+
+
+
     </style>
 
 
@@ -367,6 +563,99 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(function () {
+            const panel = $('#notifPanel');
+            const notifContent = $('#notifContent');
+            const badge = $('#notifToggle .badge');
+
+            // Hiển thị popup
+            $('#notifToggle').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                panel.toggle();
+                if (panel.is(':visible')) loadNotifications('all');
+            });
+
+            // Ẩn popup khi click ra ngoài
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#notifPanel, #notifToggle').length) {
+                    panel.hide();
+                }
+            });
+
+            // Tab “Tất cả” / “Chưa đọc”
+            $('.notif-tab').on('click', function () {
+                $('.notif-tab').removeClass('active');
+                $(this).addClass('active');
+                loadNotifications($(this).data('tab'));
+            });
+
+            // AJAX load danh sách
+            function loadNotifications(type) {
+                notifContent.html('<div class="p-3 text-center text-muted">Đang tải...</div>');
+                $.get('/Notification/GetLatest', { type: type }, function (res) {
+                    if (!res.success || res.data.length === 0) {
+                        notifContent.html('<div class="p-3 text-center text-muted">Không có thông báo nào.</div>');
+                        return;
+                    }
+
+                    let html = '';
+                    res.data.forEach(n => {
+                        const link = n.postID
+                            ? `/Post/Details/${n.postID}`
+                            : (n.projectID ? `/Project/Details/${n.projectID}` : '#');
+                        const date = new Date(n.createdAt).toLocaleString('vi-VN');
+                        const isUnread = !n.isRead;
+
+                        html += `
+                            <a href="${link}" data-id="${n.notificationID}" class="notif-item ${isUnread ? 'bg-light' : ''}">
+                                <div class="notif-text">
+                                    <div class="notif-title">${n.title}</div>
+                                    <div class="notif-message">${n.message}</div>
+                                    <div class="notif-time">${date}</div>
+                                </div>
+                                ${isUnread ? '<div class="notif-dot"></div>' : ''}
+                            </a>`;
+                    });
+
+                    html += `
+                        <div class="border-top text-center py-2">
+                            <button id="markAllRead" class="btn btn-sm btn-outline-secondary">Đánh dấu tất cả là đã đọc</button>
+                        </div>`;
+                    notifContent.html(html);
+                });
+            }
+
+            // ✅ Khi click vào 1 thông báo → mark read
+            $(document).on('click', '.notif-item', function () {
+                const notifId = $(this).data('id');
+                if (!notifId) return;
+
+                $.post('/Notification/MarkAsRead', { id: notifId }, function () {
+                    $(`[data-id="${notifId}"]`).removeClass('bg-light').find('.notif-dot').remove();
+                    const currentCount = parseInt(badge.text()) || 0;
+                    if (currentCount > 1) badge.text(currentCount - 1);
+                    else badge.remove();
+                });
+            });
+
+            // ✅ Khi click “Đánh dấu tất cả là đã đọc”
+            $(document).on('click', '#markAllRead', function () {
+                $.post('/Notification/MarkAllAsRead', function (res) {
+                    if (res.success) {
+                        $('.notif-item').removeClass('bg-light');
+                        $('.notif-dot').remove();
+                        badge.remove();
+                    }
+                });
+            });
+        });
+
+    </script>
+
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

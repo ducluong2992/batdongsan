@@ -20,6 +20,8 @@ namespace bds.Data
         public DbSet<Statistic> Statistics { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Prefered> Prefereds { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
 
         // --- THÊM PHƯƠNG THỨC NÀY ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)

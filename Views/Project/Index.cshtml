@@ -5,11 +5,10 @@
     var favoritedIds = ViewBag.FavoriteProjectIds as List<int> ?? new List<int>();
 
 }
-
+<form id="antiForgeryForm">
+    @Html.AntiForgeryToken()
+</form>
 <div class="container mt-4">
-    <form id="antiForgeryForm">
-        @Html.AntiForgeryToken()
-    </form>
 
     <div class="row">
 

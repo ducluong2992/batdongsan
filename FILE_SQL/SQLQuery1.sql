@@ -84,5 +84,22 @@ delete from Projects where ProjectID <=4*/
 -- theem lien he 
 
 ALTER TABLE Post ADD ContactPhone NVARCHAR(10) NULL;
+-- them chuwc nang Notification 
+CREATE TABLE [dbo].[Notification] (
+    [NotificationID] INT IDENTITY(1,1) PRIMARY KEY,
+    [UserID] INT NOT NULL,
+    [Title] NVARCHAR(255),
+    [Message] NVARCHAR(MAX),
+    [IsRead] BIT DEFAULT 0,
+    [CreatedAt] DATETIME DEFAULT GETDATE(),
+    [PostID] INT NULL,
+    CONSTRAINT FK_Notification_User FOREIGN KEY (UserID) REFERENCES [User](UserID),
+    CONSTRAINT FK_Notification_Post FOREIGN KEY (PostID) REFERENCES [Post](PostID)
+);
 
+ALTER TABLE [dbo].[Notification]
+ADD [ProjectID] INT NULL;
 
+ALTER TABLE [dbo].[Notification]
+ADD CONSTRAINT FK_Notification_Project
+FOREIGN KEY (ProjectID) REFERENCES [dbo].[Projects](ProjectID);
