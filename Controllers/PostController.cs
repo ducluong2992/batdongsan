@@ -286,7 +286,7 @@ namespace bds.Controllers
             existingPost.CategoryID = model.CategoryID;
             existingPost.CommuneID = model.CommuneID;
             existingPost.Status = "Chờ duyệt"; // sau khi sửa thì quay lại chờ duyệt
-            existingPost.CreateAt = DateTime.Now;
+            _context.Entry(existingPost).Property(p => p.CreateAt).IsModified = false;
 
             // Thêm ảnh mới nếu có
             if (newImages != null && newImages.Count > 0)

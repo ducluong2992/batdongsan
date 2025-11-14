@@ -307,7 +307,7 @@ namespace bds.Controllers
             }
 
             // Không thay đổi -> giữ nguyên Status cũ
-            existingProject.CreateAt = DateTime.Now;
+            _context.Entry(existingProject).Property(p => p.CreateAt).IsModified = false;
 
 
             // --- ẢNH: nếu có ảnh mới -> XÓA ảnh cũ + LƯU ảnh mới
