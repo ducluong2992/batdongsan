@@ -3,7 +3,9 @@ using bds.Models;
 using bds.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -84,6 +86,19 @@ namespace bds.Controllers
             post.RejectReason = null;
             await _context.SaveChangesAsync();
 
+            // Gửi thông báo cho người đăng
+            var notification = new Notification
+            {
+                UserID = post.UserID ?? 0,
+                PostID = post.PostID,
+                Title = "Bài đăng đã được duyệt",
+                Message = $"Bài đăng \"{post.Title}\" của bạn đã được duyệt và hiển thị công khai.",
+                CreatedAt = DateTime.Now
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+
             // Add log
             var username = User.Identity?.Name;
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -102,6 +117,19 @@ namespace bds.Controllers
             post.Status = "Không duyệt";
             post.RejectReason = reason;
             await _context.SaveChangesAsync();
+
+            // Gửi thông báo cho người đăng
+            var notification = new Notification
+            {
+                UserID = post.UserID ?? 0,
+                PostID = post.PostID,
+                Title = "Bài đăng bị từ chối",
+                Message = $"Bài đăng \"{post.Title}\" của bạn đã bị từ chối. Lý do: {reason}",
+                CreatedAt = DateTime.Now
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
 
             // Add log
             var username = User.Identity?.Name;
@@ -122,6 +150,22 @@ namespace bds.Controllers
             project.RejectReason = null;
             await _context.SaveChangesAsync();
 
+            // ✅ Gửi thông báo cho người đăng dự án
+            if (project.UserID != null)
+            {
+                var notification = new Notification
+                {
+                    UserID = project.UserID.Value,
+                    ProjectID = project.ProjectID, // ✅ thêm dòng này
+                    Title = "Dự án đã được duyệt",
+                    Message = $"Dự án \"{project.ProjectName}\" của bạn đã được duyệt và hiển thị công khai.",
+                    CreatedAt = DateTime.Now
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+
+
             // Add log
             var username = User.Identity?.Name;
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -140,6 +184,22 @@ namespace bds.Controllers
             project.Status = "Không duyệt";
             project.RejectReason = reason;
             await _context.SaveChangesAsync();
+
+            // ✅ Gửi thông báo cho người đăng dự án
+            if (project.UserID != null)
+            {
+                var notification = new Notification
+                {
+                    UserID = project.UserID.Value,
+                    ProjectID = project.ProjectID, // ✅ thêm dòng này
+                    Title = "Dự án bị từ chối",
+                    Message = $"Dự án \"{project.ProjectName}\" của bạn đã bị từ chối. Lý do: {reason}",
+                    CreatedAt = DateTime.Now
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+
 
             // Add log
             var username = User.Identity?.Name;

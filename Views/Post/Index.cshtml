@@ -219,10 +219,20 @@
 
 @section Scripts {
     <script>
+        // hamf thong bao
         function showToast(message) {
-            const toast = $("#toast");
-            toast.text(message).addClass("show");
-            setTimeout(() => toast.removeClass("show"), 2500);
+            const toast = $(`
+                                <div class="toast align-items-center text-white bg-dark border-0 position-fixed bottom-0 end-0 m-4"
+                                     role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 2000;">
+                                    <div class="d-flex">
+                                        <div class="toast-body">${message}</div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                    </div>
+                                </div>`);
+            $("body").append(toast);
+            const bsToast = new bootstrap.Toast(toast[0], { delay: 2500 });
+            bsToast.show();
+            toast.on('hidden.bs.toast', () => toast.remove());
         }
 
         $(function () {

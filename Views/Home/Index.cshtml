@@ -298,27 +298,72 @@
             });
         });
 
-        // Yêu thích
+
+        // hamf thong bao
+        function showToast(message) {
+            const toast = $(`
+                        <div class="toast align-items-center text-white bg-dark border-0 position-fixed bottom-0 end-0 m-4"
+                             role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 2000;">
+                            <div class="d-flex">
+                                <div class="toast-body">${message}</div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                            </div>
+                        </div>`);
+            $("body").append(toast);
+            const bsToast = new bootstrap.Toast(toast[0], { delay: 2500 });
+            bsToast.show();
+            toast.on('hidden.bs.toast', () => toast.remove());
+        }
+        // ❤️ Yêu thích bài đăng và dự án
         $(function () {
-            const token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
-            $(".favorite-btn").on("click", function (e) {
-                e.preventDefault(); e.stopPropagation();
-                const btn = $(this);
-                const postId = btn.data("post-id");
-                const projectId = btn.data("project-id");
-                const url = postId ? "/Prefered/AddFavoritePost" : "/Prefered/AddFavorite";
-                const data = { __RequestVerificationToken: token };
-                if (postId) data.postId = postId;
-                if (projectId) data.projectId = projectId;
-                $.post(url, data, res => {
-                    if (res.success) {
-                        const i = btn.find("i");
-                        if (res.isFavorited) i.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger");
-                        else i.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-muted");
-                    }
+                const token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+
+                $(".favorite-btn").on("click", function (event) {
+                    event.preventDefault();
+                    event.stopPropagation(); // Ngăn click lan ra link bài viết
+
+                    const btn = $(this);
+                    const postId = btn.data("post-id");
+                    const projectId = btn.data("project-id");
+                    const url = postId ? "/Prefered/AddFavoritePost" : "/Prefered/AddFavorite";
+                    const payload = { __RequestVerificationToken: token };
+                    if (postId) payload.postId = postId;
+                    if (projectId) payload.projectId = projectId;
+
+                    btn.prop("disabled", true);
+
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: payload,
+                        success: function (res) {
+                            if (res.success) {
+                                const icon = btn.find("i");
+                                if (res.isFavorited) {
+                                    icon.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger");
+                                    showToast("Đã thêm vào danh sách yêu thích ❤️");
+                                } else {
+                                    icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-muted");
+                                    showToast("Đã xóa khỏi danh sách yêu thích 💔");
+                                }
+                            } else {
+                                showToast(res.message || "Không thể thay đổi trạng thái yêu thích.");
+                            }
+                        },
+                        error: function (xhr) {
+                            if (xhr.status === 401)
+                                showToast("Vui lòng đăng nhập để thêm vào danh sách yêu thích 🔒");
+                            else if (xhr.status === 400)
+                                showToast("Lỗi xác thực, vui lòng tải lại trang 🔁");
+                            else
+                                showToast("Lỗi kết nối, thử lại sau.");
+                        },
+                        complete: function () {
+                            btn.prop("disabled", false);
+                        }
+                    });
                 });
             });
-        });
 
         // Hiệu ứng fade-up khi cuộn
         const fadeEls = document.querySelectorAll(".fade-up");
