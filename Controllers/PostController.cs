@@ -20,8 +20,11 @@ namespace bds.Controllers
         }
 
         // --- 1. DANH SÁCH BÀI ĐĂNG ---
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page =1)
         {
+
+            int pageSize = 6; // số bài mỗi trang
+
             // 🌟 Lấy các bài đăng nổi bật
             var featuredPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
@@ -48,16 +51,39 @@ namespace bds.Controllers
 
             ViewBag.FavoritePostIds = favoriteIds;
 
-            // 📋 Lấy tất cả bài đăng đã duyệt
-            var allPosts = await _context.Posts
+            //// 📋 Lấy tất cả bài đăng đã duyệt
+            //var allPosts = await _context.Posts
+            //    .Where(p => p.Status == "Đã duyệt")
+            //    .OrderByDescending(p => p.CreateAt)
+            //    .Include(p => p.User) // ✅ Lấy thông tin người đăng
+            //    .Include(p => p.Images.Take(1))
+            //    .Include(p => p.CommuneWard.District.Province)
+            //    .ToListAsync();
+
+            //return View(allPosts);
+
+            // 📌 Tổng số bài đã duyệt
+            var totalPosts = await _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .CountAsync();
+
+            var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
+
+            // 📌 Lấy bài theo trang
+            var posts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
-                .Include(p => p.User) // ✅ Lấy thông tin người đăng
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.User)
                 .Include(p => p.Images.Take(1))
                 .Include(p => p.CommuneWard.District.Province)
                 .ToListAsync();
 
-            return View(allPosts);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(posts);
         }
 
         // --- 2. TRANG CHI TIẾT BÀI ĐĂNG ---
@@ -335,7 +361,17 @@ namespace bds.Controllers
             if (post == null)
                 return NotFound();
 
-            // Xóa file ảnh vật lý
+            // 1️⃣ Gỡ liên kết trong Notification
+            var relatedNotis = await _context.Notifications
+                .Where(n => n.PostID == id)
+                .ToListAsync();
+
+            foreach (var noti in relatedNotis)
+            {
+                noti.PostID = null; // Không xóa notification, chỉ gỡ khóa ngoại
+            }
+
+            // 2️⃣ Xóa ảnh vật lý
             if (post.Images != null)
             {
                 foreach (var img in post.Images)
@@ -346,7 +382,12 @@ namespace bds.Controllers
                 }
             }
 
+            // 3️⃣ Xóa ảnh trong bảng Image
+            _context.Images.RemoveRange(post.Images);
+
+            // 4️⃣ Xóa Post
             _context.Posts.Remove(post);
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Bài đăng đã được xóa thành công!";
