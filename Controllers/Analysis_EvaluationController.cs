@@ -35,7 +35,7 @@ namespace bds.Controllers
         {
             // Lấy số lượng Post theo tỉnh
             var postTrend = await _context.Posts
-                .Where(p => p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
+                .Where(p => p.Status != "Không duyệt" && p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
                 .GroupBy(p => p.CommuneWard.District.Province.ProvinceName)
                 .Select(g => new
                 {
@@ -46,7 +46,7 @@ namespace bds.Controllers
 
             // Lấy số lượng Project theo tỉnh
             var projectTrend = await _context.Projects
-                .Where(p => p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
+                .Where(p => p.Status != "Không duyệt" && p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
                 .GroupBy(p => p.CommuneWard.District.Province.ProvinceName)
                 .Select(g => new
                 {
@@ -97,7 +97,8 @@ namespace bds.Controllers
         public async Task<JsonResult> GetPriceTrend(string province = "all")
         {
             var query = _context.Posts
-                .Where(p => p.Price != null
+                .Where(p => p.Status != "Không duyệt"
+                         &&p.Price != null
                          && p.CommuneWard != null
                          && p.CommuneWard.District != null
                          && p.CommuneWard.District.Province != null);
@@ -183,7 +184,7 @@ namespace bds.Controllers
 
             // ===== Lấy danh sách bài đăng của user ====
             var posts = _context.Posts
-                .Where(p => p.UserID == userId)
+                .Where(p => p.UserID == userId && p.Status != "Không duyệt")
                 .Select(p => new
                 {
                     ID = p.PostID,
@@ -196,7 +197,7 @@ namespace bds.Controllers
 
             // ===== Lấy danh sách dự án của user ====
             var projects = _context.Projects
-                .Where(pr => pr.UserID == userId)
+                .Where(pr => pr.UserID == userId && pr.Status != "Không duyệt")
                 .Select(pr => new
                 {
                     ID = pr.ProjectID,

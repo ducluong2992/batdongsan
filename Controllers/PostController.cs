@@ -128,6 +128,17 @@ namespace bds.Controllers
                 return RedirectToAction("Login", "Account");
 
             post.UserID = int.Parse(currentUserId);
+
+            // KIỂM TRA COINS TRƯỚC KHI ĐĂNG PROJECT (10 coins)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == post.UserID);
+            if (user.Coins < 10)
+            {
+                TempData["ErrorMessage"] =
+                $"Bạn không đủ Coins để đăng bài (cần 10 coins)." +
+                $"Số coins còn lại của bạn: {user.Coins}.";
+                return RedirectToAction("Create");
+            }
+
             post.Status = "Chờ duyệt";
             post.CreateAt = DateTime.Now;
             post.ClickCount = 0;
@@ -140,7 +151,9 @@ namespace bds.Controllers
             }
 
             _context.Posts.Add(post);
+            user.Coins -= 10; //trừ coins sau khi đăng
             await _context.SaveChangesAsync();
+
 
             // --- Upload ảnh ---
             if (images != null && images.Count > 0)
@@ -169,7 +182,9 @@ namespace bds.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            TempData["SuccessMessage"] = "Bài đăng của bạn đã được gửi thành công! Hãy chờ quản trị viên duyệt nhé.";
+            TempData["SuccessMessage"] =
+                $"Bài viết được gửi thành công tới quản trị viên! ." +
+                $"Số coins còn lại: {user.Coins}.";
             return RedirectToAction("Create");
         }
 
@@ -265,6 +280,7 @@ namespace bds.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("PostID,Title,Description,Location,Area,Price,CommuneID,CategoryID")] Post model, List<IFormFile>? newImages)
         {
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == currentUserId);
             var existingPost = await _context.Posts.Include(p => p.Images).FirstOrDefaultAsync(p => p.PostID == id && p.UserID == currentUserId);
 
             if (existingPost == null)
@@ -275,6 +291,14 @@ namespace bds.Controllers
                 ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", model.CategoryID);
                 ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
                 return View(model);
+            }
+
+            if (user.Coins < 10)
+            {
+                TempData["ErrorMessage"] =
+                $"Không đủ Coins để sửa bài đăng (cần 10 coins). " +
+                $"Số coins còn lại: {user.Coins}.";
+                return RedirectToAction("Edit");
             }
 
             // Cập nhật thông tin
@@ -313,9 +337,11 @@ namespace bds.Controllers
                     _context.Images.Add(img);
                 }
             }
-
+            user.Coins -= 10;
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Bài đăng đã được cập nhật và gửi lại để duyệt.";
+            TempData["SuccessMessage"] =
+                $"Bài đăng đã được cập nhật và gửi lại để duyệt. " +
+                $"Số coins còn lại: {user.Coins}.";
 
             return RedirectToAction(nameof(MyPosts));
         }

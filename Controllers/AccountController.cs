@@ -52,7 +52,9 @@ namespace bds.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
+                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User"),
+                new Claim("IsSuperAdmin", user.IsSuperAdmin ? "true" : "false")
+
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -258,5 +260,29 @@ namespace bds.Controllers
             bool isMatch = user.Password == oldPassword;
             return Json(new { success = isMatch });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCoins(int amount)
+        {
+            if (amount <= 0)
+            {
+                TempData["Success"] = "Số tiền không hợp lệ!";
+                return RedirectToAction("Profile", new { userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) });
+            }
+
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+            if (user == null) return NotFound();
+
+            user.Coins += amount;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Nạp thành công {amount} Coins!";
+            return RedirectToAction("Profile", new { userId });
+        }
+
     }
 }

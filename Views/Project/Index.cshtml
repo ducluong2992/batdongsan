@@ -104,7 +104,37 @@
                     <p class="text-muted">Hiện chưa có dự án nào được đăng.</p>
                 }
             </div>
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)">« Trước</a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= ViewBag.TotalPage; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i">@i</a>
+                            </li>
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)">Sau »</a>
+                            </li>
+                        }
+
+                    </ul>
+                </nav>
+            </div>
         </div>
+
+        
 
         
         <div class="col-lg-4 col-md-5">

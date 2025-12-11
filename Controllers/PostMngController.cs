@@ -82,6 +82,18 @@ namespace bds.Controllers
             var post = await _context.Posts.FindAsync(id);
             if (post == null) return NotFound();
 
+            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserID == adminId && u.RoleID == 1);
+            
+            var superAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.RoleID == 1 && u.IsSuperAdmin);
+
+            if (superAdmin != null)
+            {
+                superAdmin.Coins += 10;
+            }
+
+
             post.Status = "Đã duyệt";
             post.RejectReason = null;
             await _context.SaveChangesAsync();
@@ -111,8 +123,15 @@ namespace bds.Controllers
         [HttpPost]
         public async Task<IActionResult> RejectPost(int id, string reason)
         {
-            var post = await _context.Posts.FindAsync(id);
-            if (post == null) return NotFound();
+            var post = await _context.Posts
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.PostID == id);
+
+
+            var user = post.User;
+            if (user == null) return NotFound();
+
+            user.Coins += 10;
 
             post.Status = "Không duyệt";
             post.RejectReason = reason;
@@ -146,6 +165,18 @@ namespace bds.Controllers
             var project = await _context.Projects.FindAsync(id);
             if (project == null) return NotFound();
 
+            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserID == adminId && u.RoleID == 1);
+
+
+            var superAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.RoleID == 1 && u.IsSuperAdmin);
+
+            if (superAdmin != null)
+            {
+                superAdmin.Coins += 10;
+            }
+
             project.Status = "Đã duyệt";
             project.RejectReason = null;
             await _context.SaveChangesAsync();
@@ -178,8 +209,15 @@ namespace bds.Controllers
         [HttpPost]
         public async Task<IActionResult> RejectProject(int id, string reason)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null) return NotFound();
+            var project = await _context.Projects
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.ProjectID == id);
+
+
+            var user = project.User;
+            if (user == null) return NotFound();
+
+            user.Coins += 10;
 
             project.Status = "Không duyệt";
             project.RejectReason = reason;

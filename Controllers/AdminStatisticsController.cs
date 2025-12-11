@@ -5,6 +5,7 @@ using bds.Models;
 using bds.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace bds.Controllers
 {
@@ -319,5 +320,77 @@ namespace bds.Controllers
 
             return Json(data);
         }
+
+        //--Coins cho Admin----
+        [HttpGet]
+        public async Task<IActionResult> AdminCoins()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdString == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdString);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+
+            if (user == null)
+                return NotFound();
+
+            // CHỈ SUPER ADMIN ĐƯỢC XEM COINS
+            if (user.RoleID != 1 || user.IsSuperAdmin != true)
+                return Json(new { allowed = false });
+
+            return Json(new
+            {
+                allowed = true,
+                count = user.Coins,
+                detailUrl = Url.Action("AdminCoinsDetail", "AdminStatistics")
+            });
+
+        }
+
+        // Trang chi tiết lịch sử xu
+        [HttpGet]
+        [HttpGet]
+        public async Task<IActionResult> AdminCoinsDetail(int? month, int page = 1, int pageSize = 15)
+        {
+            var query = _context.Notifications.AsQueryable();
+
+            // Lọc theo tháng
+            if (month.HasValue && month.Value >= 1 && month.Value <= 12)
+            {
+                query = query.Where(n => n.CreatedAt.Month == month.Value);
+            }
+
+            // Tổng số bản ghi sau khi lọc
+            int totalRecords = await query.CountAsync();
+
+            // Lấy dữ liệu phân trang
+            var history = await query
+                .OrderByDescending(n => n.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(n => new TransactionHistory
+                {
+                    Title = n.Title,
+                    CreatedAt = n.CreatedAt,
+                    Coins =
+                        n.Title.Contains("đã được duyệt") ? 10 :
+                        n.Title.Contains("bị từ chối") ? 0 : 0,
+                    PostID = n.PostID,
+                    ProjectID = n.ProjectID
+                })
+                .ToListAsync();
+
+            ViewBag.CurrentMonth = month;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            return View(history);
+        }
+
+
     }
 }
