@@ -506,6 +506,46 @@ namespace bds.Controllers
             return Json(projects);
         }
 
+        //--Duyệt lại bài đăng khi Hết hạn
+        [HttpPost]
+        public async Task<IActionResult> RequestReview(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null) return NotFound();
+
+            // Lấy user hiện đang đăng nhập
+            var username = User.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            int reviewCost = 10; // phí đăng lại bài
+
+            if (user.Coins < reviewCost)
+            {
+                TempData["ErrorMessage"] = "Bạn không đủ Coins để duyệt lại bài!";
+                return RedirectToAction("MyProjectDetails", new { id });
+            }
+
+            // Trừ coins
+            user.Coins -= reviewCost;
+
+            // Reset trạng thái dự án
+            project.Status = "Chờ duyệt";
+            project.CreateAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Bạn đã yêu cầu duyệt lại bài. Số Coins còn lại: {user.Coins}.";
+
+            return RedirectToAction("MyProjectDetails", new { id });
+        }
+
+
 
     }
 }
