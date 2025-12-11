@@ -51,17 +51,6 @@ namespace bds.Controllers
 
             ViewBag.FavoritePostIds = favoriteIds;
 
-            //// 📋 Lấy tất cả bài đăng đã duyệt
-            //var allPosts = await _context.Posts
-            //    .Where(p => p.Status == "Đã duyệt")
-            //    .OrderByDescending(p => p.CreateAt)
-            //    .Include(p => p.User) // ✅ Lấy thông tin người đăng
-            //    .Include(p => p.Images.Take(1))
-            //    .Include(p => p.CommuneWard.District.Province)
-            //    .ToListAsync();
-
-            //return View(allPosts);
-
             // 📌 Tổng số bài đã duyệt
             var totalPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
