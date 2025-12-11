@@ -9,6 +9,17 @@
 {
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["ErrorMessage"]
+        <br />
+        <a href="@Url.Action("Profile", "Account", new { userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value })"
+           class="btn btn-sm btn-primary mt-2">
+            → Nạp Coins ngay
+        </a>
+    </div>
+}
 
 <form asp-action="Create" enctype="multipart/form-data">
     <div class="form-group mb-3">

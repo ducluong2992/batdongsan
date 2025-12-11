@@ -33,18 +33,30 @@
                 <div class="row g-4">
                     @foreach (var p in posts)
                     {
+                        var isExpired = p.Status == "Hết hạn"; // ✅ kiểm tra trạng thái
                         <div class="col-lg-4 col-md-6 col-sm-12">
-                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden">
-                                <a asp-controller="Post" asp-action="Details" asp-route-id="@p.PostID" class="stretched-link"></a>
+                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden @(isExpired ? "expired" : "")">
+                                @if (!isExpired)
+                                {
+                                    <a asp-controller="Post" asp-action="Details" asp-route-id="@p.PostID" class="stretched-link"></a>
+                                }
+
+                                <!-- Ảnh -->
                                 <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;" />
 
+                                <!-- Overlay nếu hết hạn -->
+                                @if (isExpired)
+                                {
+                                    <div class="expired-overlay">
+                                        <span class="expired-text">HẾT HẠN</span>
+                                    </div>
+                                }
+
                                 <div class="card-body">
                                     <h5 class="card-title fw-bold text-truncate text-dark">@p.Title</h5>
-                                    <p class="text-muted small mb-1">
-                                        📍 @p.Location
-                                    </p>
+                                    <p class="text-muted small mb-1">📍 @p.Location</p>
                                     <p class="text-danger fw-semibold mb-2">
                                         💰 @(p.Price.HasValue ? string.Format("{0:N0} ₫", p.Price) : "Thỏa thuận")
                                     </p>
@@ -71,12 +83,24 @@
                 <div class="row g-4">
                     @foreach (var p in projects)
                     {
+                        var isExpired = p.Status == "Hết hạn";
                         <div class="col-lg-4 col-md-6 col-sm-12">
-                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden">
-                                <a asp-controller="Project" asp-action="Details" asp-route-id="@p.ProjectID" class="stretched-link"></a>
+                            <div class="card shadow-sm border-0 rounded-4 h-100 post-card position-relative overflow-hidden @(isExpired ? "expired" : "")">
+                                @if (!isExpired)
+                                {
+                                    <a asp-controller="Project" asp-action="Details" asp-route-id="@p.ProjectID" class="stretched-link"></a>
+                                }
+
                                 <img src="@(p.Images.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;" />
+
+                                @if (isExpired)
+                                {
+                                    <div class="expired-overlay">
+                                        <span class="expired-text">HẾT HẠN</span>
+                                    </div>
+                                }
 
                                 <div class="card-body">
                                     <h5 class="card-title fw-bold text-truncate text-dark">@p.ProjectName</h5>
@@ -148,4 +172,36 @@
             padding: 6px 10px;
         }
     }
+    /* ========== HẾT HẠN ========== */
+    .expired {
+        opacity: 0.6;
+        filter: grayscale(60%);
+        pointer-events: none; /* chặn click */
+        position: relative;
+    }
+
+    .expired-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .expired-text {
+        color: #fff;
+        background-color: #dc3545;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
 </style>

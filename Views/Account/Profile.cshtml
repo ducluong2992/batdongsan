@@ -37,6 +37,10 @@
                         <p class="mb-2"><i class="bi bi-person"></i> <strong>Tên đăng nhập:</strong> @Model.Username</p>
                         <p class="mb-2"><i class="bi bi-envelope"></i> <strong>Email:</strong> @Model.Email</p>
                         <p class="mb-2"><i class="bi bi-telephone"></i> <strong>Số điện thoại:</strong> @Model.Phone</p>
+                        <p class="mb-2">
+                            <i class="bi bi-coin"></i> <strong>Số Coins:</strong>
+                            <span class="text-success fw-bold">@Model.Coins</span>
+                        </p>
                     </div>
 
                     <hr />
@@ -52,6 +56,25 @@
                         </a>
                     </div>
 
+                    <hr />
+
+                    <h4 class="text-primary mb-3">
+                        <i class="bi bi-wallet2"></i> Nạp Coins
+                    </h4>
+
+                    <form asp-action="AddCoins" asp-controller="Account" method="post" class="mt-3 d-flex gap-2 align-items-center">
+                        <div class="input-group mb-0 flex-fill">
+                            <span class="input-group-text bg-success text-white">
+                                <i class="bi bi-cash-coin"></i>
+                            </span>
+                            <input type="number" name="amount" class="form-control"
+                                   placeholder="Nhập số Coins muốn nạp..." min="1" required>
+                        </div>
+
+                        <button class="btn btn-success py-2 flex-shrink-0" type="submit">
+                            <i class="bi bi-plus-circle"></i> Nạp Coins
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

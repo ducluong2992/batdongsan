@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<bds.Models.Post>
 
 @{
-    ViewData["Title"] = "Danh sách bài đăng";
+    ViewData["Title"] = "Mua bán";
     var featuredPosts = ViewBag.FeaturedPosts as IEnumerable<bds.Models.Post>;
     var favoritedIds = ViewBag.FavoritePostIds as List<int> ?? new List<int>();
 }

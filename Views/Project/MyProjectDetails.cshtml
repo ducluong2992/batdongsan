@@ -8,6 +8,17 @@
         @TempData["SuccessMessage"]
     </div>
 }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center fw-semibold shadow-sm mt-3" role="alert">
+        @TempData["ErrorMessage"]
+        <br />
+        <a href="@Url.Action("Profile", "Account", new { userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value })"
+           class="btn btn-sm btn-primary mt-2">
+            → Nạp Coins ngay
+        </a>
+    </div>
+}
 
 <div class="container mt-4">
      <div class="d-flex justify-content-center gap-3 mb-4">

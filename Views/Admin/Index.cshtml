@@ -10,7 +10,8 @@
 
     <!-- ==== THỐNG KÊ TỔNG QUAN ==== -->
     <div class="row text-center mb-5" id="statsContainer">
-        <div class="col-md-4 mb-3">
+
+        <div class="col-md mb-3">
             <div class="card border-warning shadow-sm h-100">
                 <div class="card-body">
                     <i class="bi bi-hourglass-split text-warning" style="font-size:2rem"></i>
@@ -21,7 +22,7 @@
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
+        <div class="col-md mb-3">
             <div class="card border-success shadow-sm h-100">
                 <div class="card-body">
                     <i class="bi bi-check-circle text-success" style="font-size:2rem"></i>
@@ -32,7 +33,7 @@
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
+        <div class="col-md mb-3">
             <div class="card border-primary shadow-sm h-100">
                 <div class="card-body">
                     <i class="bi bi-people-fill text-primary" style="font-size:2rem"></i>
@@ -42,7 +43,27 @@
                 </div>
             </div>
         </div>
+        @{
+            var isSuperAdmin = User.IsInRole("Admin") &&
+            (User.Claims.FirstOrDefault(c => c.Type == "IsSuperAdmin")?.Value == "true");
+        }
+        @if (isSuperAdmin)
+        {
+            <div class="col-md mb-3">
+                <div class="card border-info shadow-sm h-100">
+                    <div class="card-body">
+                        <i class="bi bi-coin text-info" style="font-size:2rem"></i>
+                        <h6 class="text-muted mt-2">Coins của Admin</h6>
+                        <h3 id="adminCoins" class="fw-bold text-info">0</h3>
+                        <a href="#" id="adminCoinsDetail" class="btn btn-outline-info btn-sm mt-2">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
+  
+
+
 
     <!-- ==== BIỂU ĐỒ GIÁ TRỊ TRUNG BÌNH THEO TỈNH ==== -->
     <div class="card shadow-sm mb-5">
@@ -82,6 +103,25 @@
                 console.error("Lỗi tải thống kê:", error);
             }
         }
+        
+        async function loadAdminCoins() {
+            try {
+                const res = await fetch('/AdminStatistics/AdminCoins');
+                const data = await res.json();
+
+                // Nếu không phải Super Admin → ẩn box Coins
+                if (!data.allowed) {
+                    document.querySelector("#adminCoins")?.closest(".col-md-4")?.classList.add("d-none");
+                    return;
+                }
+
+                document.getElementById('adminCoins').innerText = data.count;
+                document.getElementById('adminCoinsDetail').href = data.detailUrl;
+            } catch (e) {
+                console.error("Lỗi tải coins admin:", e);
+            }
+        }
+
 
         async function loadAveragePriceChart() {
             try {
@@ -159,6 +199,8 @@
 
         // === Gọi khi load trang ===
         loadStatistics();
+        loadAdminCoins();
         loadAveragePriceChart();
+
     </script>
 }

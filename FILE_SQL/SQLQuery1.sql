@@ -103,3 +103,6 @@ ADD [ProjectID] INT NULL;
 ALTER TABLE [dbo].[Notification]
 ADD CONSTRAINT FK_Notification_Project
 FOREIGN KEY (ProjectID) REFERENCES [dbo].[Projects](ProjectID);
+
+--Cập nhật 17/11: Thêm thuộc tính Coins cho User
+ALTER TABLE [User] ADD Coins INT NOT NULL DEFAULT 0;

@@ -35,7 +35,7 @@ namespace bds.Controllers
         {
             // Lấy số lượng Post theo tỉnh
             var postTrend = await _context.Posts
-                .Where(p => p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
+                .Where(p => p.Status != "Không duyệt" && p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
                 .GroupBy(p => p.CommuneWard.District.Province.ProvinceName)
                 .Select(g => new
                 {
@@ -46,7 +46,7 @@ namespace bds.Controllers
 
             // Lấy số lượng Project theo tỉnh
             var projectTrend = await _context.Projects
-                .Where(p => p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
+                .Where(p => p.Status != "Không duyệt" && p.CommuneWard != null && p.CommuneWard.District != null && p.CommuneWard.District.Province != null)
                 .GroupBy(p => p.CommuneWard.District.Province.ProvinceName)
                 .Select(g => new
                 {
@@ -97,7 +97,8 @@ namespace bds.Controllers
         public async Task<JsonResult> GetPriceTrend(string province = "all")
         {
             var query = _context.Posts
-                .Where(p => p.Price != null
+                .Where(p => p.Status != "Không duyệt"
+                         &&p.Price != null
                          && p.CommuneWard != null
                          && p.CommuneWard.District != null
                          && p.CommuneWard.District.Province != null);
@@ -105,7 +106,7 @@ namespace bds.Controllers
             if (province.ToLower() != "all")
                 query = query.Where(p => p.CommuneWard.District.Province.ProvinceName == province);
 
-            // 🟢 Bước 1: GroupBy và lấy dữ liệu thô từ DB
+            // 🟢 GroupBy theo tỉnh + năm + tháng
             var rawData = await query
                 .GroupBy(p => new
                 {
@@ -118,20 +119,19 @@ namespace bds.Controllers
                     g.Key.Province,
                     g.Key.Year,
                     g.Key.Month,
-                    avgPrice = g.Average(p => p.Price)
+                    AvgPrice = g.Average(p => p.Price)
                 })
+                .OrderBy(g => g.Year)
+                .ThenBy(g => g.Month)
                 .ToListAsync();
 
-            // 🟢 Bước 2: Chuyển sang bộ nhớ để xử lý label (EF không dịch được string.Concat)
-            var data = rawData
-                .Select(g => new
-                {
-                    province = g.Province,
-                    label = $"{g.Month}/{g.Year}",
-                    avgPrice = g.avgPrice
-                })
-                .OrderBy(x => x.label)
-                .ToList();
+            // 🟢 Tạo label sau khi đã sắp đúng thứ tự
+            var data = rawData.Select(g => new
+            {
+                province = g.Province,
+                label = $"{g.Month:D2}/{g.Year}", // thêm D2 để 01, 02, 03... giúp JS sort đúng
+                avgPrice = Math.Round(g.AvgPrice ?? 0, 2)
+            }).ToList();
 
             return Json(data);
         }
@@ -144,35 +144,50 @@ namespace bds.Controllers
         [HttpGet]
         public IActionResult GetPostPerformance()
         {
-            // 🔹 Lấy ID người dùng hiện tại (chuỗi)
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 🔹 Kiểm tra hợp lệ và chuyển sang int
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
-            {
                 return Json(new { error = "Chưa đăng nhập hoặc ID không hợp lệ" });
-            }
 
-            // 1️⃣ Đếm lượt tym cho Post
+            // ===== Lấy dữ liệu yêu thích (tym) trước ====
             var postLikeCounts = _context.Prefereds
                 .Where(p => p.PostID != null)
                 .GroupBy(p => p.PostID)
                 .Select(g => new { PostID = g.Key.Value, LikeCount = g.Count() })
                 .ToList();
 
-            // 2️⃣ Đếm lượt tym cho Project
             var projectLikeCounts = _context.Prefereds
                 .Where(p => p.ProjectID != null)
                 .GroupBy(p => p.ProjectID)
                 .Select(g => new { ProjectID = g.Key.Value, LikeCount = g.Count() })
                 .ToList();
 
-            // 3️⃣ Chỉ lấy bài và dự án của user hiện tại
+            // 🔹 Cập nhật trạng thái hết hạn trước khi trả dữ liệu
+            var now = DateTime.Now;
+            var expiredPosts = _context.Posts
+                .Where(p => p.Status != "Hết hạn" && now > p.CreateAt.AddDays(7))
+                .ToList();
+
+            foreach (var p in expiredPosts)
+                p.Status = "Hết hạn";
+
+            var expiredProjects = _context.Projects
+                .Where(pr => pr.Status != "Hết hạn" && now > pr.CreateAt.AddDays(7))
+                .ToList();
+
+            foreach (var pr in expiredProjects)
+                pr.Status = "Hết hạn";
+
+            if (expiredPosts.Any() || expiredProjects.Any())
+                _context.SaveChanges();
+
+
+            // ===== Lấy danh sách bài đăng của user ====
             var posts = _context.Posts
-                .Where(p => p.UserID == userId)
+                .Where(p => p.UserID == userId && p.Status != "Không duyệt")
                 .Select(p => new
                 {
-                    p.PostID,
+                    ID = p.PostID,
                     Name = p.Title,
                     Category = "Post",
                     p.ClickCount,
@@ -180,11 +195,12 @@ namespace bds.Controllers
                 })
                 .ToList();
 
+            // ===== Lấy danh sách dự án của user ====
             var projects = _context.Projects
-                .Where(pr => pr.UserID == userId)
+                .Where(pr => pr.UserID == userId && pr.Status != "Không duyệt")
                 .Select(pr => new
                 {
-                    pr.ProjectID,
+                    ID = pr.ProjectID,
                     Name = pr.ProjectName,
                     Category = "Project",
                     pr.ClickCount,
@@ -192,27 +208,38 @@ namespace bds.Controllers
                 })
                 .ToList();
 
-            // 4️⃣ Ghép dữ liệu
+            // ===== Ghép LikeCount (xử lý trong bộ nhớ C#) ====
             var postData = posts.Select(p => new
             {
+                p.ID,
                 p.Name,
                 p.Category,
                 p.ClickCount,
-                LikeCount = postLikeCounts.FirstOrDefault(x => x.PostID == p.PostID)?.LikeCount ?? 0,
-                p.CreateAt
+                LikeCount = postLikeCounts
+                    .Where(x => x.PostID == p.ID)
+                    .Select(x => x.LikeCount)
+                    .FirstOrDefault(),
+                CreatedAt = p.CreateAt,
+                ExpireAt = p.CreateAt.AddDays(7)
             });
 
             var projectData = projects.Select(pr => new
             {
+                pr.ID,
                 pr.Name,
                 pr.Category,
                 pr.ClickCount,
-                LikeCount = projectLikeCounts.FirstOrDefault(x => x.ProjectID == pr.ProjectID)?.LikeCount ?? 0,
-                pr.CreateAt
+                LikeCount = projectLikeCounts
+                    .Where(x => x.ProjectID == pr.ID)
+                    .Select(x => x.LikeCount)
+                    .FirstOrDefault(),
+                CreatedAt = pr.CreateAt,
+                ExpireAt = pr.CreateAt.AddDays(7)
             });
 
-            // 5️⃣ Hợp & trả về
-            var combined = postData.Union(projectData)
+            // ===== Gộp dữ liệu (Concat) ====
+            var combined = postData
+                .Concat(projectData)
                 .OrderByDescending(x => x.ClickCount)
                 .Select(x => new
                 {
@@ -220,7 +247,8 @@ namespace bds.Controllers
                     x.Category,
                     x.ClickCount,
                     x.LikeCount,
-                    CreatedAt = x.CreateAt.ToString("dd/MM/yyyy HH:mm")
+                    createdAt = x.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                    expireAt = x.ExpireAt.ToString("yyyy-MM-ddTHH:mm:ss")
                 })
                 .ToList();
 

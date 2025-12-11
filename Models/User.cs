@@ -24,6 +24,8 @@ namespace bds.Models
         public bool IsLocked { get; set; } = false; 
         //QUan he
         public Role? Role { get; set; }
+        public int Coins { get; set; } = 0;  // mặc định 0 xu
+
         public ICollection<Post>? Posts { get; set; }
         public ICollection<Project>? Projects { get; set; }
         public ICollection<SearchHistory>? SearchHistories { get; set; }

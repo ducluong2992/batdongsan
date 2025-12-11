@@ -1,0 +1,90 @@
+﻿@model List<TransactionHistory>
+
+<h2 class="mt-3">Lịch sử giao dịch xu</h2>
+
+<!-- Bộ lọc tháng -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="month" class="form-select">
+            <option value="">-- Tất cả tháng --</option>
+            @for (int m = 1; m <= 12; m++)
+            {
+                <option value="@m" selected="@(ViewBag.CurrentMonth == m ? "selected" : null)">
+                    Tháng @m
+                </option>
+
+               
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary" type="submit">Lọc</button>
+    </div>
+</form>
+
+<!-- Bảng lịch sử -->
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Thời gian</th>
+            <th>Nội dung</th>
+            <th>Post ID</th>
+            <th>Project ID</th>
+            <th>Xu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.Title</td>
+                <td>@item.PostID</td>
+                <td>@item.ProjectID</td>
+
+
+                <!-- Hiển thị xu: dương = xanh, âm = đỏ, 0 = đen -->
+                <td style="font-weight: bold; 
+                           color:@(item.Coins > 0 ? "green" : item.Coins < 0 ? "red" : "red")">
+                    @(item.Coins > 0 ? "+" + item.Coins : "+" + item.Coins)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Pagination -->
+@if (ViewBag.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+
+            <!-- Trang trước -->
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   href="?month=@ViewBag.CurrentMonth&page=@(ViewBag.CurrentPage - 1)">
+                    « Trước
+                </a>
+            </li>
+
+            <!-- Các trang -->
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       href="?month=@ViewBag.CurrentMonth&page=@i">@i</a>
+                </li>
+            }
+
+            <!-- Trang sau -->
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   href="?month=@ViewBag.CurrentMonth&page=@(ViewBag.CurrentPage + 1)">
+                    Sau »
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+}

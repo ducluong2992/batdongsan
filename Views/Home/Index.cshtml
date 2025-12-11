@@ -71,17 +71,39 @@
         @if (ViewBag.TopNews != null && ((List<bds.Models.News>)ViewBag.TopNews).Any())
         {
             var topNews = (List<bds.Models.News>)ViewBag.TopNews;
+
             foreach (var news in topNews)
             {
+                // --- Làm sạch nội dung (xóa <p>, <br>, ... và giới hạn ký tự)
+                var rawContent = news.Content ?? "";
+                rawContent = rawContent
+                .Replace("</p>", ". ")
+                .Replace("<br>", " ")
+                .Replace("<br/>", " ")
+                .Replace("<br />", " ")
+                .Replace("</li>", ", ")
+                .Replace("</ul>", " ")
+                .Replace("</ol>", " ");
+
+                string plainContent = System.Text.RegularExpressions.Regex.Replace(rawContent, "<.*?>", string.Empty);
+                plainContent = System.Text.RegularExpressions.Regex.Replace(plainContent, @"\s+", " ").Trim();
+
+                if (plainContent.Length > 150)
+                {
+                    plainContent = plainContent.Substring(0, 150) + "...";
+                }
+
                 <div class="col-lg-4 col-md-6 fade-up">
                     <div class="card shadow-sm border-0 h-100">
                         <a asp-controller="News" asp-action="Details" asp-route-id="@news.NewsID" class="text-decoration-none text-dark">
                             <img src="@(news.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top" alt="@news.Title">
                             <div class="card-body">
                                 <h6 class="fw-bold text-truncate mb-2">@news.Title</h6>
-                                <p class="text-muted small mb-2">👤 @news.User?.FullName | 👁️ @news.ViewCount lượt xem</p>
-                                <p class="text-secondary small">
-                                    @(news.Content?.Length > 100 ? news.Content.Substring(0, 100) + "..." : news.Content)
+                                <p class="text-muted small mb-2">
+                                    👤 @news.User?.FullName | 👁️ @news.ViewCount lượt xem
+                                </p>
+                                <p class="text-secondary small" style="line-height:1.5; text-align:justify;">
+                                    @plainContent
                                 </p>
                                 <span class="text-primary small fw-semibold">Xem chi tiết →</span>
                             </div>
@@ -182,29 +204,60 @@
             {
                 bool isFavorited = favoritedProjectIds.Contains(project.ProjectID);
 
+                // --- Làm sạch mô tả dự án ---
+                var rawDescription = project.Description ?? "";
+                rawDescription = rawDescription
+                .Replace("</p>", ". ")
+                .Replace("<br>", " ")
+                .Replace("<br/>", " ")
+                .Replace("<br />", " ")
+                .Replace("</li>", ", ")
+                .Replace("</ul>", " ")
+                .Replace("</ol>", " ");
+
+                string plainDescription = System.Text.RegularExpressions.Regex.Replace(rawDescription, "<.*?>", string.Empty);
+                plainDescription = System.Text.RegularExpressions.Regex.Replace(plainDescription, @"\s+", " ").Trim();
+
+                if (plainDescription.Length > 150)
+                {
+                    plainDescription = plainDescription.Substring(0, 150) + "...";
+                }
+
                 <div class="col-lg-4 col-md-6 fade-up">
                     <div class="card h-100 shadow-sm border-0 post-card position-relative">
                         <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="stretched-link text-decoration-none text-dark">
-                            <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top post-image" alt="@project.ProjectName" />
-                            <div class="card-body p-3">
+                            <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/placeholder.jpg")"
+                                 class="card-img-top post-image"
+                                 alt="@project.ProjectName" />
+
+                            <div class="card-body p-3 d-flex flex-column">
                                 <h6 class="fw-bold text-truncate mb-2">@project.ProjectName</h6>
-                                <p class="text-muted small mb-2 text-truncate">@project.Description</p>
-                                <div class="small text-secondary mb-2">📍 @project.Location</div>
-                                <div class="d-flex align-items-center border-top pt-2 mt-2">
-                                    <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="36" height="36" />
-                                    <div>
-                                        <div class="fw-semibold small">@project.User?.FullName</div>
-                                        <div class="text-muted small">👁️ @project.ClickCount lượt xem</div>
+                                <div class="text-muted small mb-2">
+                                    📍 @project.Location
+                                </div>
+
+                                <p class="text-secondary small mb-2" style="line-height:1.5; text-align:justify;">
+                                    @plainDescription
+                                </p>
+
+                                <div class="mt-auto d-flex align-items-center justify-content-between border-top pt-2 mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <img src="/images/avt/user.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32" />
+                                        <div class="small fw-semibold">
+                                            <span class="text-dark">@project.User?.FullName</span>
+                                            <div class="text-muted small">👁️ @project.ClickCount lượt xem</div>
+                                        </div>
                                     </div>
+
+                                    <!-- ❤️ Nút tym -->
+                                    
+                                    <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
+                                            data-post-id="@project.ProjectID" style="z-index:10;">
+                                        <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                                    </button>
                                 </div>
                             </div>
                         </a>
-
-                        <!-- ❤️ Nút tim -->
-                        <button class="btn btn-link p-0 favorite-btn position-absolute bottom-0 end-0 m-3"
-                                data-project-id="@project.ProjectID" style="z-index:10;">
-                            <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
-                        </button>
                     </div>
                 </div>
             }
@@ -215,7 +268,6 @@
         }
     </div>
 </section>
-
 @section Scripts {
     <script>
         // Dropdown động

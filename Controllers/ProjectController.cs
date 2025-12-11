@@ -20,20 +20,24 @@ namespace bds.Controllers
         }
 
         // --- 1. TRANG DANH SÁCH DỰ ÁN ---
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // Lấy các dự án nổi bật (Top 5 click, đã duyệt)
+            int pageSize = 6; 
+            int skip = (page - 1) * pageSize;
+
+            // Dự án nổi bật
             var featuredProjects = await _context.Projects
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.ClickCount)
                 .Take(5)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.CommuneWard.District.Province) // cập nhật theo mô hình mới
+                .Include(p => p.CommuneWard.District.Province)
                 .ToListAsync();
 
             ViewBag.FeaturedProjects = featuredProjects;
 
-            // hiển thị tym 
+             
+            // Danh sách tym
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             List<int> favoriteIds = new();
 
@@ -47,19 +51,30 @@ namespace bds.Controllers
 
             ViewBag.FavoriteProjectIds = favoriteIds;
 
-            // Lấy tất cả dự án (đã duyệt)
-            var allProjects = await _context.Projects
+            
+            // Tổng số dự án
+          
+            int totalProjects = await _context.Projects
+                .Where(p => p.Status == "Đã duyệt")
+                .CountAsync();
+
+            // Lấy danh sách cho trang hiện tại
+            var projects = await _context.Projects
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
+                .Skip(skip)
+                .Take(pageSize)
                 .Include(p => p.Images.Take(1))
-                .Include(p => p.CommuneWard.District.Province) // cập nhật
+                .Include(p => p.User)
+                .Include(p => p.CommuneWard.District.Province)
                 .ToListAsync();
 
-            //dùng để lọc
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPage = (int)Math.Ceiling(totalProjects / (double)pageSize);
+
             ViewBag.Provinces = _context.Provinces.OrderBy(p => p.ProvinceName).ToList();
 
-
-            return View(allProjects);
+            return View(projects);
         }
 
         // --- 2. TRANG CHI TIẾT DỰ ÁN ---
@@ -115,6 +130,17 @@ namespace bds.Controllers
 
             // Gán UserID
             project.UserID = int.Parse(currentUserId);
+
+            // KIỂM TRA COINS TRƯỚC KHI ĐĂNG PROJECT (10 coins)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == project.UserID);
+            if (user.Coins < 10)
+            {
+                TempData["ErrorMessage"] =
+                $"Không đủ Coins để đăng dự án (cần 10 coins). " +
+                $"Số coins còn lại: {user.Coins}.";
+                return RedirectToAction("Create");
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
@@ -128,7 +154,10 @@ namespace bds.Controllers
                 project.ClickCount = 0;
 
                 _context.Projects.Add(project);
+                user.Coins -= 10; //trừ coins sau khi đăng
                 await _context.SaveChangesAsync(); // Lưu để có ProjectID
+
+
 
                 // --- B2: Upload và lưu thông tin ảnh ---
                 if (images != null && images.Count > 0)
@@ -157,12 +186,13 @@ namespace bds.Controllers
                         _context.Images.Add(image);
                     }
 
-                    // Lưu tất cả ảnh vào DB
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();     
                 }
 
                 // --- B3: Thông báo thành công ---
-                TempData["SuccessMessage"] = "Dự án của bạn đã được gửi thành công! Hãy chờ quản trị viên duyệt nhé.";
+                TempData["SuccessMessage"] =
+                $"Dự án được gửi thành công tới quản trị viên! ." +
+                $"Số coins còn lại: {user.Coins}.";
 
                 return RedirectToAction("Create"); // Quay lại form và hiển thị alert
             }
@@ -269,54 +299,73 @@ namespace bds.Controllers
 
             if (existingProject == null) return NotFound();
 
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+
             if (!ModelState.IsValid)
             {
-                // reload ViewBag nếu cần rồi trả về View
                 ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
                 return View(project);
             }
 
-            // --- CẬP NHẬT TRƯỜNG CƠ BẢN ---
-            bool isModified =
-                existingProject.ProjectName != project.ProjectName ||
-                existingProject.Description != project.Description ||
-                existingProject.Location != project.Location ||
+
+            //1. KIỂM TRA THAY ĐỔI THỰC SỰ (Trim + so sánh giá trị)
+            bool baseFieldsChanged =
+                existingProject.ProjectName?.Trim() != project.ProjectName?.Trim() ||
+                existingProject.Description?.Trim() != project.Description?.Trim() ||
+                existingProject.Location?.Trim() != project.Location?.Trim() ||
                 existingProject.Area != project.Area ||
                 existingProject.StartDate != project.StartDate ||
                 existingProject.EndDate != project.EndDate ||
                 existingProject.CommuneID != project.CommuneID;
 
-            // Cập nhật dữ liệu mới
-            existingProject.ProjectName = project.ProjectName;
-            existingProject.Description = project.Description;
-            existingProject.Location = project.Location;
+            bool imagesChanged = (images != null && images.Count > 0);
+
+            bool hasRealChanges = baseFieldsChanged || imagesChanged;
+
+
+            //2. KHÔNG THAY ĐỔI GÌ → KHÔNG TRỪ COINS, KHÔNG RESET STATUS
+            if (!hasRealChanges)
+            {
+                TempData["SuccessMessage"] = "Không có thay đổi nào được thực hiện.";
+                return RedirectToAction("MyProjectDetails", new { id = existingProject.ProjectID });
+            }
+
+
+            //3. CHỈ CHECK COINS KHI THỰC SỰ CÓ THAY ĐỔI
+            if (user.Coins < 10)
+            {
+                TempData["ErrorMessage"] =
+                $"Không đủ Coins để sửa dự án (cần 10 coins). " +
+                $"Số coins còn lại: {user.Coins}.";
+                return RedirectToAction("MyProjectDetails", new { id = existingProject.ProjectID });
+            }
+
+
+            //4. CẬP NHẬT DỮ LIỆU (đã xác định là có thay đổi)
+            existingProject.ProjectName = project.ProjectName?.Trim();
+            existingProject.Description = project.Description?.Trim();
+            existingProject.Location = project.Location?.Trim();
             existingProject.Area = project.Area;
             existingProject.StartDate = project.StartDate;
             existingProject.EndDate = project.EndDate;
             existingProject.CommuneID = project.CommuneID;
 
-            // Kiểm tra có thay đổi ảnh không
-            bool imagesChanged = (images != null && images.Count > 0);
 
-            // Nếu có thay đổi -> chuyển trạng thái về Chờ duyệt
-            if (isModified || imagesChanged)
+            // 5. Chỉ Reset Status khi có thay đổi THỰC SỰ
+            existingProject.Status = "Chờ duyệt";
+            existingProject.RejectReason = "";
+
+            _context.Entry(existingProject).Property(p => p.CreateAt).IsModified = false;
+
+
+            // 6. ẢNH — Chỉ xử lý khi có ảnh mới tải lên
+            if (imagesChanged)
             {
-                existingProject.Status = "Chờ duyệt";
-                existingProject.RejectReason = "";
-            }
-
-            // Không thay đổi -> giữ nguyên Status cũ
-            existingProject.CreateAt = DateTime.Now;
-
-
-            // --- ẢNH: nếu có ảnh mới -> XÓA ảnh cũ + LƯU ảnh mới
-            if (images != null && images.Count > 0)
-            {
-                // Tạo folder nếu chưa tồn tại
                 string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "projects");
                 if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
-                // XÓA files cũ (trong wwwroot) và xóa record cũ trong _context.Images
+                // Xóa ảnh cũ
                 if (existingProject.Images != null && existingProject.Images.Any())
                 {
                     foreach (var oldImg in existingProject.Images.ToList())
@@ -326,48 +375,45 @@ namespace bds.Controllers
                             var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, oldImg.ImageUrl.TrimStart('/'));
                             if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
-
-                    // RemoveRange hoặc Remove từng item
                     _context.Images.RemoveRange(existingProject.Images);
-                    // clear local collection to avoid duplicates
                     existingProject.Images.Clear();
                 }
 
-                // Lưu ảnh mới
+                // Thêm ảnh mới
                 foreach (var file in images)
                 {
                     if (file.Length <= 0) continue;
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(uploadDir, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
 
-                    var newImage = new Image
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(uploadDir, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                        await file.CopyToAsync(stream);
+
+                    existingProject.Images.Add(new Image
                     {
-                        ImageUrl = "/images/projects/" + fileName,
-                        // ProjectID will be set by EF when saving (existingProject.ProjectID already set)
-                    };
-                    existingProject.Images.Add(newImage);
+                        ImageUrl = "/images/projects/" + fileName
+                    });
                 }
             }
-            // else: user did NOT upload new images -> giữ nguyên existingProject.Images
+
+            // 7. TRỪ COINS CHỈ KHI CÓ THAY ĐỔI THẬT
 
             try
             {
                 _context.Update(existingProject);
+                user.Coins -= 10;
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cập nhật dự án thành công!";
+
+                TempData["SuccessMessage"] =
+              $"Dự án đã được cập nhật và gửi lại để duyệt. " +
+              $"Số coins còn lại: {user.Coins}.";
                 return RedirectToAction("MyProjectDetails", new { id = existingProject.ProjectID });
             }
             catch (DbUpdateException dbEx)
             {
-                // bạn có thể log dbEx
                 TempData["ErrorMessage"] = "Có lỗi khi cập nhật dữ liệu: " + dbEx.Message;
                 ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
                 return View(project);
