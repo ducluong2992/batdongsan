@@ -1,4 +1,5 @@
 ﻿using bds.Data;
+using bds.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,16 +32,26 @@ namespace bds.Controllers
 
         // 🔹 Lấy 5 thông báo mới nhất
         [HttpGet]
-        public async Task<JsonResult> GetLatest()
+        public async Task<JsonResult> GetLatest(string type)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr)) return Json(new { success = false });
 
             int userId = int.Parse(userIdStr);
 
-            var notifications = await _context.Notifications
-                .Where(n => n.UserID == userId)
-                .OrderByDescending(n => n.CreatedAt)
+            // 🔥 Query KHÔNG ORDER trước, để có thể gán Where không lỗi
+            IQueryable<Notification> query = _context.Notifications
+                .Where(n => n.UserID == userId);
+
+            if (type == "unread")
+            {
+                query = query.Where(n => !n.IsRead);
+            }
+
+            // 🔥 ORDER sau cùng để giữ đúng thứ tự
+            query = query.OrderByDescending(n => n.CreatedAt);
+
+            var notifications = await query
                 .Take(5)
                 .Select(n => new
                 {
@@ -56,6 +67,8 @@ namespace bds.Controllers
 
             return Json(new { success = true, data = notifications });
         }
+
+
 
         // ✅ Đánh dấu 1 thông báo là đã đọc
         [HttpPost]
