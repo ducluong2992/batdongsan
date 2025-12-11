@@ -164,12 +164,14 @@
                     <tbody>
                         @foreach (var project in expired)
                         {
-                            <tr class="opacity-75">
+                            <tr style="cursor:pointer;"
+                                onclick="window.location.href='@Url.Action("MyProjectDetails", "Project", new { id = project.ProjectID })'">
                                 <td>
                                     <img src="@(project.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                          width="100"
-                                         class="rounded shadow-sm grayscale" />
+                                         class="rounded shadow-sm" />
                                 </td>
+
                                 <td>@project.ProjectName</td>
                                 <td>@project.CommuneWard?.CommuneName, @project.CommuneWard?.District?.DistrictName</td>
                                 <td>@project.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
