@@ -165,14 +165,14 @@ namespace bds.Controllers
             // 🔹 Cập nhật trạng thái hết hạn trước khi trả dữ liệu
             var now = DateTime.Now;
             var expiredPosts = _context.Posts
-                .Where(p => p.Status != "Hết hạn" && now > p.CreateAt.AddDays(7))
+                .Where(p => p.Status != "Hết hạn" && now > p.CreateAt.AddDays(20))
                 .ToList();
 
             foreach (var p in expiredPosts)
                 p.Status = "Hết hạn";
 
             var expiredProjects = _context.Projects
-                .Where(pr => pr.Status != "Hết hạn" && now > pr.CreateAt.AddDays(7))
+                .Where(pr => pr.Status != "Hết hạn" && now > pr.CreateAt.AddDays(20))
                 .ToList();
 
             foreach (var pr in expiredProjects)
@@ -220,7 +220,7 @@ namespace bds.Controllers
                     .Select(x => x.LikeCount)
                     .FirstOrDefault(),
                 CreatedAt = p.CreateAt,
-                ExpireAt = p.CreateAt.AddDays(7)
+                ExpireAt = p.CreateAt.AddDays(20)
             });
 
             var projectData = projects.Select(pr => new
@@ -234,7 +234,7 @@ namespace bds.Controllers
                     .Select(x => x.LikeCount)
                     .FirstOrDefault(),
                 CreatedAt = pr.CreateAt,
-                ExpireAt = pr.CreateAt.AddDays(7)
+                ExpireAt = pr.CreateAt.AddDays(20)
             });
 
             // ===== Gộp dữ liệu (Concat) ====

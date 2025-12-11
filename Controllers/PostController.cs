@@ -379,5 +379,44 @@ namespace bds.Controllers
             return RedirectToAction(nameof(MyPosts));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> RequestReviewPost(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+
+            var username = User.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            int reviewCost = 10; // phí đăng lại bài
+
+            if (user.Coins < reviewCost)
+            {
+                TempData["ErrorMessage"] = "Bạn không đủ Coins để đăng lại bài!";
+                return RedirectToAction("MyPost");
+            }
+
+            // Trừ coins
+            user.Coins -= reviewCost;
+
+            // Reset trạng thái post
+            post.Status = "Chờ duyệt";
+            post.CreateAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Bạn đã đăng lại bài thành công!";
+
+            return RedirectToAction("MyPosts");
+        }
+       
+
+
     }
 }

@@ -35,7 +35,7 @@
                         {
                             <div class="carousel-item @(image.i == 0 ? "active" : "")">
                                 <img src="@Url.Content(image.value.ImageUrl)" class="d-block w-100"
-                                     style="height: 400px; object-fit: cover;" alt="Ảnh Post">
+                                style="height: 400px; object-fit: cover;" alt="Ảnh Post">
                             </div>
                         }
                     </div>
@@ -56,21 +56,25 @@
                 @Html.Raw(Model.Description)
             </div>
 
-            <!-- Nút hành động -->
-            <div class="mb-4 d-flex">
-                <form method="post" asp-action="ApprovePost" asp-controller="PostMng" class="me-2">
-                    <input type="hidden" name="id" value="@Model.PostID" />
-                    <button type="submit" class="btn btn-success">Duyệt</button>
-                </form>
+            @if (Model.Status == "Chờ duyệt")
+            {
+                <!-- Nút hành động -->
+                <div class="mb-4 d-flex">
+                    <form method="post" asp-action="ApprovePost" asp-controller="PostMng" class="me-2">
+                        <input type="hidden" name="id" value="@Model.PostID" />
+                        <button type="submit" class="btn btn-success">Duyệt</button>
+                    </form>
 
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                    Không duyệt
-                </button>
-            </div>
-
-            <!-- Modal từ chối -->
-            <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        Không duyệt
+                    </button>
+                </div>
+            }
+            @if (Model.Status == "Chờ duyệt")
+{
+                <!-- Modal từ chối -->
+                <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="post" asp-action="RejectPost" asp-controller="PostMng">
                             <input type="hidden" name="id" value="@Model.PostID" />
@@ -95,7 +99,7 @@
                     </div>
                 </div>
             </div>
-
+            }
         </div>
     </div>
 </div>
