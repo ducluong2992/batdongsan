@@ -28,3 +28,27 @@ CREATE TABLE Prefered (
         REFERENCES Projects(ProjectID) ON DELETE CASCADE
 );
 select * from Prefered
+
+
+--- CHATBOX ---
+
+1, Vào link này: https://aistudio.google.com/api-keys
+- Vào Dự án -> Tạo 1 Dự án mới, Ví dụ Lương Chó 
+- Sau đó nó vào Khóa API -> Tạo khóa API (góc phải) -> Đặt tên rồi Chọn Dự án đã nhập là Lương Chó 
+- Chọn nút sao chép key đó, đúng Dự án Lương Chó nhé
+
+2, Vào appsettings.json thêm cái này: 
+
+"Gemini": {
+  "ApiKey": "cho key vào đây"
+}
+
+3, Có thể vào trang web để test thử xem key đã hoạt động chưa, gõ:
+
+https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY
+
+Nếu hiển thị file json -> Đúng 
+
+thk lương cáo già hihiiiiiiiiiiiiiiiiiii
+
+

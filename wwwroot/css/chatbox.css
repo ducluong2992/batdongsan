@@ -1,0 +1,92 @@
+﻿#chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #007bff;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 9999;
+}
+
+#chatbox {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+#chat-header {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 15px 15px 0 0;
+}
+
+#chat-messages {
+    padding: 10px;
+    height: 320px;
+    overflow-y: auto;
+}
+
+#chat-input-area {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 5px;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px;
+}
+
+#send-btn {
+    padding: 8px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+.msg-user {
+    background-color: #dcf8c6; /* Màu xanh nhạt giống Zalo/Messenger */
+    align-self: flex-end; /* Đẩy tin nhắn sang phải */
+    text-align: right;
+    margin: 5px 0 5px 20%; /* Chừa khoảng trống bên trái */
+    padding: 8px 12px;
+    border-radius: 15px 15px 0 15px;
+    word-wrap: break-word;
+}
+
+.msg-ai {
+    background-color: #f1f0f0; /* Màu xám nhạt */
+    align-self: flex-start; /* Đẩy tin nhắn sang trái */
+    text-align: left;
+    margin: 5px 20% 5px 0; /* Chừa khoảng trống bên phải */
+    padding: 8px 12px;
+    border-radius: 15px 15px 15px 0;
+    word-wrap: break-word;
+}
+
+/* Cập nhật flex cho container tin nhắn để căn trái/phải được */
+#chat-messages {
+    padding: 10px;
+    height: 320px;
+    overflow-y: auto;
+    display: flex; /* Thêm dòng này */
+    flex-direction: column; /* Thêm dòng này */
+}
