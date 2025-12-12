@@ -26,6 +26,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 // Đăng ký HostedService
 builder.Services.AddHostedService<ExpirationChecker>();
 
+builder.Services.AddSingleton(new GeminiService("AIzaSyA7iTrZyxCHqFm2hqIjjp4H2H_g2E88LzM"));
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
