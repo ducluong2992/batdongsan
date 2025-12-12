@@ -113,6 +113,24 @@ namespace bds.Controllers
             return View(post);
         }
 
+        // TRANG MY Post DETAILS
+        public async Task<IActionResult> MyPostDetails(int id)
+        {
+            if (id == null) return NotFound();
+   
+            var post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Images)
+                .Include(p => p.CommuneWard.District.Province)
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.PostID == id);
+
+            if (post == null )
+                return NotFound();
+           
+            return View(post);
+        }
+
         // --- 3. TRANG ĐĂNG BÀI ---
         [Authorize]
         public IActionResult Create()

@@ -604,8 +604,8 @@
                     let html = '';
                     res.data.forEach(n => {
                         const link = n.postID
-                            ? `/Post/Details/${n.postID}`
-                            : (n.projectID ? `/Project/Details/${n.projectID}` : '#');
+                            ? `/Post/MyPostDetails/${n.postID}`
+                            : (n.projectID ? `/Project/MyProjectDetails/${n.projectID}` : '#');
                         const date = new Date(n.createdAt).toLocaleString('vi-VN');
                         const isUnread = !n.isRead;
 
