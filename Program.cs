@@ -3,6 +3,7 @@ using bds.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using bds.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Thêm Authentication
@@ -17,6 +18,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<LogService>();
 
+
 // Add services to the container.
 builder.Services.AddSession();  // ✅ Bật dịch vụ Session
 
@@ -26,7 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 // Đăng ký HostedService
 builder.Services.AddHostedService<ExpirationChecker>();
 
-builder.Services.AddSingleton(new GeminiService("AIzaSyA7iTrZyxCHqFm2hqIjjp4H2H_g2E88LzM"));
+
 
 
 var app = builder.Build();
