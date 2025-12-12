@@ -25,7 +25,7 @@ namespace bds.Controllers
 
             int pageSize = 6; // số bài mỗi trang
 
-            // 🌟 Lấy các bài đăng nổi bật
+            //  Lấy các bài đăng nổi bật
             var featuredPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.ClickCount)
@@ -37,7 +37,7 @@ namespace bds.Controllers
 
             ViewBag.FeaturedPosts = featuredPosts;
 
-            // ❤️ Lấy danh sách bài đã yêu thích
+            //  Lấy danh sách bài đã yêu thích
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             List<int> favoriteIds = new();
 
@@ -51,14 +51,14 @@ namespace bds.Controllers
 
             ViewBag.FavoritePostIds = favoriteIds;
 
-            // 📌 Tổng số bài đã duyệt
+            //  Tổng số bài đã duyệt
             var totalPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .CountAsync();
 
             var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
 
-            // 📌 Lấy bài theo trang
+            //  Lấy bài theo trang
             var posts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
@@ -95,7 +95,7 @@ namespace bds.Controllers
             _context.Update(post);
             await _context.SaveChangesAsync();
 
-            // 🌟 Lấy danh sách bài đăng liên quan
+            //  Lấy danh sách bài đăng liên quan
             var relatedPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt"
                          && p.PostID != id
@@ -120,7 +120,7 @@ namespace bds.Controllers
             ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
             ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
 
-            // ✅ Tự động điền số điện thoại người đăng
+            // Tự động điền số điện thoại người đăng
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId != null)
             {
@@ -376,7 +376,7 @@ namespace bds.Controllers
             if (post == null)
                 return NotFound();
 
-            // 1️⃣ Gỡ liên kết trong Notification
+            //  Gỡ liên kết trong Notification
             var relatedNotis = await _context.Notifications
                 .Where(n => n.PostID == id)
                 .ToListAsync();
@@ -386,7 +386,7 @@ namespace bds.Controllers
                 noti.PostID = null; // Không xóa notification, chỉ gỡ khóa ngoại
             }
 
-            // 2️⃣ Xóa ảnh vật lý
+            //  Xóa ảnh vật lý
             if (post.Images != null)
             {
                 foreach (var img in post.Images)
@@ -397,10 +397,10 @@ namespace bds.Controllers
                 }
             }
 
-            // 3️⃣ Xóa ảnh trong bảng Image
+            //  Xóa ảnh trong bảng Image
             _context.Images.RemoveRange(post.Images);
 
-            // 4️⃣ Xóa Post
+            //  Xóa Post
             _context.Posts.Remove(post);
 
             await _context.SaveChangesAsync();
