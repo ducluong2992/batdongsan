@@ -350,13 +350,18 @@ namespace bds.Controllers
         }
 
         // Trang chi tiết lịch sử xu
+       
         [HttpGet]
-        [HttpGet]
-        public async Task<IActionResult> AdminCoinsDetail(int? month, int page = 1, int pageSize = 15)
+        public async Task<IActionResult> AdminCoinsDetail(int? month, int? year, int page = 1, int pageSize = 15)
         {
-            var query = _context.Notifications.AsQueryable();
+            // Mặc định lấy năm hiện tại
+            int selectedYear = year ?? DateTime.Now.Year;
 
-            // Lọc theo tháng
+            var query = _context.Notifications
+                .Where(n => n.CreatedAt.Year == selectedYear) // Lọc theo năm
+                .AsQueryable();
+
+            // Nếu chọn tháng
             if (month.HasValue && month.Value >= 1 && month.Value <= 12)
             {
                 query = query.Where(n => n.CreatedAt.Month == month.Value);
@@ -364,6 +369,15 @@ namespace bds.Controllers
 
             // Tổng số bản ghi sau khi lọc
             int totalRecords = await query.CountAsync();
+
+            // Tổng Coins trong tháng đang xem
+            int totalCoinsOfMonth = await query
+                .Select(n =>
+                    n.Title.Contains("đã được duyệt") ? 10 :
+                    n.Title.Contains("bị từ chối") ? 0 :
+                    0
+                )
+                .SumAsync();
 
             // Lấy dữ liệu phân trang
             var history = await query
@@ -383,9 +397,11 @@ namespace bds.Controllers
                 .ToListAsync();
 
             ViewBag.CurrentMonth = month;
+            ViewBag.CurrentYear = selectedYear;
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalRecords = totalRecords;
+            ViewBag.TotalCoinsOfMonth = totalCoinsOfMonth;
             ViewBag.TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
 
             return View(history);
