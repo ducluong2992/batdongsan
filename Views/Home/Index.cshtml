@@ -74,7 +74,6 @@
 
             foreach (var news in topNews)
             {
-                // --- Làm sạch nội dung (xóa <p>, <br>, ... và giới hạn ký tự)
                 var rawContent = news.Content ?? "";
                 rawContent = rawContent
                 .Replace("</p>", ". ")

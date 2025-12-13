@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
 // Thêm Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -13,12 +16,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied"; // Khi truy cập trái phép
     });
-
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<LogService>();
 
 // Add services to the container.
-builder.Services.AddSession();  // ✅ Bật dịch vụ Session
+builder.Services.AddSession();  
 
 builder.Services.AddControllersWithViews();
 

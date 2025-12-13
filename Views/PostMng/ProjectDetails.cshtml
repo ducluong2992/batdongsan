@@ -47,7 +47,7 @@
                                 {
                                     <div class="carousel-item @(image.i == 0 ? "active" : "")">
                                         <img src="@Url.Content(image.value.ImageUrl)" class="d-block w-100"
-                                             style="height: 400px; object-fit: cover;" alt="Ảnh dự án">
+                                        style="height: 400px; object-fit: cover;" alt="Ảnh dự án">
                                     </div>
                                 }
                             </div>
@@ -68,48 +68,53 @@
                         @Html.Raw(Model.Description)
                     </div>
                     <!-- Nút hành động -->
-                    <div class="d-flex gap-2">
-                        <form method="post" asp-action="ApproveProject" asp-controller="PostMng">
-                            <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Duyệt
-                            </button>
-                        </form>
+                    @if (Model.Status == "Chờ duyệt")
+                    {
+                        <div class="d-flex gap-2">
+                            <form method="post" asp-action="ApproveProject" asp-controller="PostMng">
+                                <input type="hidden" name="id" value="@Model.ProjectID" />
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Duyệt
+                                </button>
+                            </form>
 
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                            <i class="bi bi-x-circle"></i> Không duyệt
-                        </button>
-                    </div>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                <i class="bi bi-x-circle"></i> Không duyệt
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal từ chối -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" asp-action="RejectProject" asp-controller="PostMng">
-                <input type="hidden" name="id" value="@Model.ProjectID" />
-                <div class="modal-header">
-                    <h5 class="modal-title" id="rejectModalLabel">Chọn lý do từ chối Project</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <select class="form-select" name="reason" required>
-                        <option value="">-- Chọn lý do --</option>
-                        <option value="Nội dung không hợp lệ">Nội dung không hợp lệ</option>
-                        <option value="Thiếu thông tin">Thiếu thông tin</option>
-                        <option value="Trùng bài đăng">Trùng bài đăng</option>
-                        <option value="Khác">Khác</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
-                </div>
-            </form>
+@if (Model.Status == "Chờ duyệt")
+{
+    <!-- Modal từ chối -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-action="RejectProject" asp-controller="PostMng">
+                    <input type="hidden" name="id" value="@Model.ProjectID" />
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rejectModalLabel">Chọn lý do từ chối Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <select class="form-select" name="reason" required>
+                            <option value="">-- Chọn lý do --</option>
+                            <option value="Nội dung không hợp lệ">Nội dung không hợp lệ</option>
+                            <option value="Thiếu thông tin">Thiếu thông tin</option>
+                            <option value="Trùng bài đăng">Trùng bài đăng</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+}

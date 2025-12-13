@@ -106,3 +106,20 @@ FOREIGN KEY (ProjectID) REFERENCES [dbo].[Projects](ProjectID);
 
 --Cập nhật 17/11: Thêm thuộc tính Coins cho User
 ALTER TABLE [User] ADD Coins INT NOT NULL DEFAULT 0;
+
+
+
+--2. Thêm bảng Prefered để lưu Post/Project yêu thích
+
+CREATE TABLE Prefered (
+    PreferedID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    PostID INT NULL,
+    ProjectID INT NULL,
+    CONSTRAINT FK_Prefered_User FOREIGN KEY (UserID) 
+        REFERENCES [User](UserID) ON DELETE CASCADE,
+    CONSTRAINT FK_Prefered_Post FOREIGN KEY (PostID) 
+        REFERENCES Post(PostID) ON DELETE CASCADE,
+    CONSTRAINT FK_Prefered_Project FOREIGN KEY (ProjectID) 
+        REFERENCES Projects(ProjectID) ON DELETE CASCADE
+);
