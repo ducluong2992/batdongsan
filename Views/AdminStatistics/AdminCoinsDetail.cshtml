@@ -3,25 +3,37 @@
 <h2 class="mt-3">Lịch sử giao dịch xu</h2>
 
 <!-- Bộ lọc tháng -->
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3">
-        <select name="month" class="form-select">
-            <option value="">-- Tất cả tháng --</option>
-            @for (int m = 1; m <= 12; m++)
-            {
-                <option value="@m" selected="@(ViewBag.CurrentMonth == m ? "selected" : null)">
-                    Tháng @m
-                </option>
 
-               
-            }
-        </select>
-    </div>
+<form method="get" class="d-flex gap-3 mb-3">
+    <select name="year" class="form-select" style="width:150px">
+        @for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year; y++)
+        {
+            <option value="@y" selected="@(ViewBag.CurrentYear == y ? "selected" : null)">
+                @y
+            </option>
+        }
+    </select>
 
-    <div class="col-md-2">
-        <button class="btn btn-primary" type="submit">Lọc</button>
-    </div>
+    <select name="month" class="form-select" style="width:150px">
+        <option value="">-- Tất cả tháng --</option>
+        @for (int m = 1; m <= 12; m++)
+        {
+            <option value="@m" selected="@(ViewBag.CurrentMonth == m ? "selected" : null)">
+                Tháng @m
+            </option>
+        }
+    </select>
+
+    <button type="submit" class="btn btn-primary">Lọc</button>
 </form>
+@if (ViewBag.CurrentMonth != null)
+{
+    <div class="alert alert-info fw-semibold">
+        Tổng Xu trong tháng @ViewBag.CurrentMonth / @ViewBag.CurrentYear:
+        <span class="text-primary">@ViewBag.TotalCoinsOfMonth</span> Xu
+    </div>
+}
+
 
 <!-- Bảng lịch sử -->
 <table class="table table-bordered mt-3">

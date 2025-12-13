@@ -3,6 +3,7 @@ using bds.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using bds.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<LogService>();
 
+
 // Add services to the container.
 builder.Services.AddSession();  
 
@@ -28,6 +30,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("RealEstateConnection")));
 // Đăng ký HostedService
 builder.Services.AddHostedService<ExpirationChecker>();
+
 
 var app = builder.Build();
 

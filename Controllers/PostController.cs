@@ -20,9 +20,12 @@ namespace bds.Controllers
         }
 
         // --- 1. DANH SÁCH BÀI ĐĂNG ---
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page =1)
         {
-            // 🌟 Lấy các bài đăng nổi bật
+
+            int pageSize = 6; // số bài mỗi trang
+
+            //  Lấy các bài đăng nổi bật
             var featuredPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.ClickCount)
@@ -34,7 +37,7 @@ namespace bds.Controllers
 
             ViewBag.FeaturedPosts = featuredPosts;
 
-            // ❤️ Lấy danh sách bài đã yêu thích
+            //  Lấy danh sách bài đã yêu thích
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             List<int> favoriteIds = new();
 
@@ -48,16 +51,28 @@ namespace bds.Controllers
 
             ViewBag.FavoritePostIds = favoriteIds;
 
-            // 📋 Lấy tất cả bài đăng đã duyệt
-            var allPosts = await _context.Posts
+            //  Tổng số bài đã duyệt
+            var totalPosts = await _context.Posts
+                .Where(p => p.Status == "Đã duyệt")
+                .CountAsync();
+
+            var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
+
+            //  Lấy bài theo trang
+            var posts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt")
                 .OrderByDescending(p => p.CreateAt)
-                .Include(p => p.User) // ✅ Lấy thông tin người đăng
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.User)
                 .Include(p => p.Images.Take(1))
                 .Include(p => p.CommuneWard.District.Province)
                 .ToListAsync();
 
-            return View(allPosts);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(posts);
         }
 
         // --- 2. TRANG CHI TIẾT BÀI ĐĂNG ---
@@ -80,7 +95,7 @@ namespace bds.Controllers
             _context.Update(post);
             await _context.SaveChangesAsync();
 
-            // 🌟 Lấy danh sách bài đăng liên quan
+            //  Lấy danh sách bài đăng liên quan
             var relatedPosts = await _context.Posts
                 .Where(p => p.Status == "Đã duyệt"
                          && p.PostID != id
@@ -98,6 +113,24 @@ namespace bds.Controllers
             return View(post);
         }
 
+        // TRANG MY Post DETAILS
+        public async Task<IActionResult> MyPostDetails(int id)
+        {
+            if (id == null) return NotFound();
+   
+            var post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Images)
+                .Include(p => p.CommuneWard.District.Province)
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.PostID == id);
+
+            if (post == null )
+                return NotFound();
+           
+            return View(post);
+        }
+
         // --- 3. TRANG ĐĂNG BÀI ---
         [Authorize]
         public IActionResult Create()
@@ -105,7 +138,7 @@ namespace bds.Controllers
             ViewData["ProvinceList"] = new SelectList(_context.Provinces, "ProvinceID", "ProvinceName");
             ViewData["CategoryList"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
 
-            // ✅ Tự động điền số điện thoại người đăng
+            // Tự động điền số điện thoại người đăng
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId != null)
             {
@@ -361,7 +394,17 @@ namespace bds.Controllers
             if (post == null)
                 return NotFound();
 
-            // Xóa file ảnh vật lý
+            //  Gỡ liên kết trong Notification
+            var relatedNotis = await _context.Notifications
+                .Where(n => n.PostID == id)
+                .ToListAsync();
+
+            foreach (var noti in relatedNotis)
+            {
+                noti.PostID = null; // Không xóa notification, chỉ gỡ khóa ngoại
+            }
+
+            //  Xóa ảnh vật lý
             if (post.Images != null)
             {
                 foreach (var img in post.Images)
@@ -372,12 +415,56 @@ namespace bds.Controllers
                 }
             }
 
+            //  Xóa ảnh trong bảng Image
+            _context.Images.RemoveRange(post.Images);
+
+            //  Xóa Post
             _context.Posts.Remove(post);
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Bài đăng đã được xóa thành công!";
             return RedirectToAction(nameof(MyPosts));
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RequestReviewPost(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+
+            var username = User.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            int reviewCost = 10; // phí đăng lại bài
+
+            if (user.Coins < reviewCost)
+            {
+                TempData["ErrorMessage"] = "Bạn không đủ Coins để đăng lại bài!";
+                return RedirectToAction("MyPost");
+            }
+
+            // Trừ coins
+            user.Coins -= reviewCost;
+
+            // Reset trạng thái post
+            post.Status = "Chờ duyệt";
+            post.CreateAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Bạn đã đăng lại bài thành công!";
+
+            return RedirectToAction("MyPosts");
+        }
+       
+
 
     }
 }

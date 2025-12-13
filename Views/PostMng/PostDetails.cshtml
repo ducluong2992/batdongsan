@@ -3,10 +3,8 @@
 @{
     ViewData["Title"] = Model.Title;
 }
-
 <div class="container mt-4">
     <div class="row">
-        <!-- 🧱 Cột trái: Chi tiết Post -->
         <div class="col-lg-8 col-md-12">
             <a asp-action="Pending" asp-controller="PostMng" class="btn btn-secondary mb-3">
                 <i class="bi bi-arrow-left"></i> Quay lại danh sách 
@@ -25,8 +23,6 @@
             </p>
 
             <hr />
-
-            <!-- Ảnh Carousel -->
             @if (Model.Images != null && Model.Images.Any())
             {
                 <div id="postCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
@@ -55,7 +51,6 @@
             <div class="p-3 bg-light rounded shadow-sm mb-4">
                 @Html.Raw(Model.Description)
             </div>
-
             <!-- Nút hành động -->
             @if (Model.Status == "Chờ duyệt")
             {
@@ -70,11 +65,8 @@
                     </button>
                 </div>
             }
-
-
-            <!-- Modal từ chối -->
             @if (Model.Status == "Chờ duyệt")
-            {
+{
                 <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                     <div class="modal-content">
@@ -105,3 +97,4 @@
         </div>
     </div>
 </div>
+

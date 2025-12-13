@@ -125,7 +125,7 @@ namespace bds.Controllers
             ViewBag.Provinces = _context.Provinces.OrderBy(p => p.ProvinceName).ToList();
             ViewBag.Categories = _context.Categories.OrderBy(c => c.CategoryName).ToList();
 
-            // ✅ Load danh sách Quận theo Tỉnh (nếu có chọn)
+            //  Load danh sách Quận theo Tỉnh (nếu có chọn)
             if (ProvinceId.HasValue)
             {
                 ViewBag.Districts = _context.Districts
@@ -134,7 +134,7 @@ namespace bds.Controllers
                     .ToList();
             }
 
-            // ✅ Load danh sách Xã theo Quận (nếu có chọn)
+            //  Load danh sách Xã theo Quận (nếu có chọn)
             if (DistrictId.HasValue)
             {
                 ViewBag.Communes = _context.CommuneWards
@@ -143,7 +143,7 @@ namespace bds.Controllers
                     .ToList();
             }
 
-            // ✅ Truyền thêm giá trị đã chọn để View hiển thị lại
+            //  Truyền thêm giá trị đã chọn để View hiển thị lại
             ViewBag.SelectedProvinceId = ProvinceId;
             ViewBag.SelectedDistrictId = DistrictId;
             ViewBag.SelectedCommuneId = CommuneId;

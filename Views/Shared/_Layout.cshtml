@@ -153,6 +153,26 @@
     </style>
 </head>
 
+<!--Chatbox-->
+<!-- Chat Button -->
+<div id="chat-button">
+    <img src="/images/Logo/chat.png" alt="AI" />
+</div>
+
+<!-- Chatbox -->
+<div id="chatbox">
+    <div id="chat-header">Trợ lý HHL RealEstate <span id="chat-close">–</span></div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Vui lòng nhập câu hỏi...">
+        <button id="send-btn">Gửi</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/css/chatbox.css">
+<script src="/js/chatbox.js"></script>
+
+
 <body>
     <!-- ===== HEADER ===== -->
     <header>
@@ -604,8 +624,8 @@
                     let html = '';
                     res.data.forEach(n => {
                         const link = n.postID
-                            ? `/Post/Details/${n.postID}`
-                            : (n.projectID ? `/Project/Details/${n.projectID}` : '#');
+                            ? `/Post/MyPostDetails/${n.postID}`
+                            : (n.projectID ? `/Project/MyProjectDetails/${n.projectID}` : '#');
                         const date = new Date(n.createdAt).toLocaleString('vi-VN');
                         const isUnread = !n.isRead;
 

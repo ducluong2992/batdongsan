@@ -1,0 +1,173 @@
+﻿@model bds.Models.Post
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <a asp-action="Edit" asp-controller="Post" asp-route-id="@Model.PostID" class="btn btn-warning px-4">
+            <i class="bi bi-pencil"></i> Sửa
+        </a>
+
+        @if (Model.Status == "Hết hạn")
+        {
+            <form asp-action="RequestReview" asp-controller="Post" method="post">
+                <input type="hidden" name="id" value="@Model.PostID" />
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-arrow-clockwise"></i> Yêu cầu duyệt lại
+                </button>
+            </form>
+        }
+
+        <a asp-action="Delete" asp-route-id="@Model.PostID" class="btn btn-danger px-4">
+            <i class="bi bi-trash"></i> Xóa
+        </a>
+        <a asp-action="MyPosts" class="btn btn-secondary px-4">← Quay lại</a>
+    </div>
+    <div class="row">
+        <div class="col-12">
+
+            <!-- TRẠNG THÁI BÀI ĐĂNG -->
+            <div class="mb-3">
+                @if (Model.Status == "Đã duyệt")
+                {
+                    <span class="badge bg-success px-3 py-2">ĐÃ DUYỆT</span>
+                }
+                else if (Model.Status == "Chờ duyệt")
+                {
+                    <span class="badge bg-warning text-dark px-3 py-2">CHỜ DUYỆT</span>
+                    <p class="text-muted small mt-2">⏳ Bài đăng đang được xét duyệt bởi quản trị viên.</p>
+                }
+                else if (Model.Status == "Không duyệt")
+                {
+                    <span class="badge bg-danger px-3 py-2">BỊ TỪ CHỐI</span>
+                    <p class="text-danger small fw-bold mt-2">
+                        ❌ Lý do: @Model.RejectReason
+                    </p>
+                }
+                else if (Model.Status == "Hết hạn")
+                {
+                    <span class="badge bg-secondary px-3 py-2">HẾT HẠN</span>
+                    <p class="text-muted small mt-2">🕓 Bài đăng đã hết hiệu lực.</p>
+                }
+            </div>
+
+            <!-- ẢNH CHÍNH -->
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div class="position-relative rounded overflow-hidden shadow-sm mb-3">
+                    <img id="mainImage" src="@Model.Images.First().ImageUrl"
+                         alt="@Model.Title"
+                         class="img-fluid w-100 rounded-3"
+                         style="height: 450px; object-fit: cover;">
+                    <button id="prevBtn" class="nav-btn left"><i class="bi bi-chevron-left"></i></button>
+                    <button id="nextBtn" class="nav-btn right"><i class="bi bi-chevron-right"></i></button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        var img = Model.Images.ElementAt(i);
+                        <img src="@img.ImageUrl"
+                             data-index="@i"
+                             class="thumbnail-img rounded-3 shadow-sm"
+                             style="width:95px; height:80px; object-fit:cover; cursor:pointer;" />
+                    }
+                </div>
+            }
+            else
+            {
+                <img src="/images/no-image.png" class="img-fluid rounded shadow-sm mb-4" style="height:420px; object-fit:cover;">
+            }
+
+            <!-- TIÊU ĐỀ -->
+            <h3 class="fw-bold text-dark mb-3">@Model.Title</h3>
+            <div class="text-muted small mb-3">
+                🕓 @Model.CreateAt.ToString("dd/MM/yyyy") &nbsp;|&nbsp; 👁️ @Model.ClickCount lượt xem
+            </div>
+
+            <!-- THÔNG TIN CƠ BẢN -->
+            <div class="bg-light rounded-4 p-3 mb-4">
+                <div class="d-flex flex-wrap justify-content-between mb-2">
+                    <div><i class="bi bi-geo-alt text-danger"></i> <b>Địa chỉ:</b> @Model.Location</div>
+                    <div><i class="bi bi-rulers text-primary"></i> <b>Diện tích:</b> @(Model.Area ?? 0) m²</div>
+                </div>
+                <div><i class="bi bi-cash-stack text-success"></i> <b>Giá:</b> @(Model.Price?.ToString("N0") ?? "Thỏa thuận") ₫</div>
+            </div>
+
+            <!-- MÔ TẢ -->
+            <h5 class="fw-semibold border-start border-4 border-primary ps-2 mb-3">📝 Mô tả chi tiết</h5>
+            <div class="bg-white border rounded-4 shadow-sm p-4 mb-5" style="line-height:1.8;">
+                @Html.Raw(Model.Description?.Replace("\n", "<br>").Replace("<p>", "<p class='mb-2'>"))
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- STYLE -->
+<style>
+    .thumbnail-img {
+        border: 2px solid transparent;
+        transition: all 0.25s ease;
+    }
+
+        .thumbnail-img:hover,
+        .thumbnail-img.active-thumb {
+            border-color: #0d6efd;
+            transform: scale(1.05);
+        }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.4);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        padding: 8px 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .nav-btn.left {
+            left: 10px;
+        }
+
+        .nav-btn.right {
+            right: 10px;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        let currentIndex = 0;
+        const images = Array.from(document.querySelectorAll(".thumbnail-img"));
+        const mainImage = document.getElementById("mainImage");
+
+        function updateMainImage(index) {
+            if (index < 0 || index >= images.length) return;
+            currentIndex = index;
+            mainImage.src = images[index].src;
+            images.forEach(img => img.classList.remove("active-thumb"));
+            images[index].classList.add("active-thumb");
+        }
+
+        document.getElementById("prevBtn")?.addEventListener("click", () => {
+            updateMainImage((currentIndex - 1 + images.length) % images.length);
+        });
+        document.getElementById("nextBtn")?.addEventListener("click", () => {
+            updateMainImage((currentIndex + 1) % images.length);
+        });
+
+        images.forEach((img, idx) => img.addEventListener("click", () => updateMainImage(idx)));
+
+        if (images.length > 0) updateMainImage(0);
+    </script>
+}

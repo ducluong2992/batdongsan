@@ -506,7 +506,7 @@ namespace bds.Controllers
             return Json(projects);
         }
 
-        //--Duyệt lại bài đăng khi Hết hạn
+        //--Duyệt lại bài khi Hết hạn
         [HttpPost]
         public async Task<IActionResult> RequestReview(int id)
         {

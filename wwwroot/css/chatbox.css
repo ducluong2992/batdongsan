@@ -1,0 +1,113 @@
+﻿/* ===== NÚT MỞ CHAT (ICON AI) ===== */
+#chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #007bff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+    #chat-button img {
+        width: 34px;
+        height: 34px;
+    }
+
+/* ===== KHUNG CHATBOX ===== */
+#chatbox {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+#chat-header {
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    color: white;
+    padding: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* NÚT THU NHỎ (DẤU -) */
+#chat-close {
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 0 6px;
+}
+
+/* ===== DANH SÁCH TIN NHẮN ===== */
+#chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+}
+
+/* ===== KHU NHẬP LIỆU ===== */
+#chat-input-area {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 5px;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+#send-btn {
+    padding: 8px 14px;
+    background: linear-gradient(90deg, #7ee97a, #005c99, #a6e7ff);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ===== TIN NHẮN NGƯỜI DÙNG ===== */
+.msg-user {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    text-align: right;
+    margin: 5px 0 5px 20%;
+    padding: 8px 12px;
+    border-radius: 15px 15px 0 15px;
+    word-wrap: break-word;
+}
+
+/* ===== TIN NHẮN AI ===== */
+.msg-ai {
+    background-color: #f1f0f0;
+    align-self: flex-start;
+    text-align: left;
+    margin: 5px 20% 5px 0;
+    padding: 8px 12px;
+    border-radius: 15px 15px 15px 0;
+    word-wrap: break-word;
+}

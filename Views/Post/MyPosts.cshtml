@@ -52,7 +52,7 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <a asp-action="Details" asp-route-id="@post.PostID">
+                                <a asp-action="MyPostDetails" asp-route-id="@post.PostID">
                                     <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                          class="card-img-top rounded-top-4"
                                          style="height:220px;object-fit:cover;transition:0.3s;" />
@@ -60,7 +60,7 @@
 
                                 <div class="card-body">
                                     <h5 class="fw-bold text-truncate mb-1">
-                                        <a asp-action="Details" asp-route-id="@post.PostID"
+                                        <a asp-action="MyPostDetails" asp-route-id="@post.PostID"
                                            class="text-dark text-decoration-none hover-link">
                                             @post.Title
                                         </a>
@@ -100,12 +100,19 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
-                                     class="card-img-top rounded-top-4"
-                                     style="height:220px;object-fit:cover;opacity:0.9;" />
-
+                                <a asp-action="MyPostDetails" asp-route-id="@post.PostID">
+                                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                         class="card-img-top rounded-top-4"
+                                         style="height:220px;object-fit:cover;opacity:0.9;" />
+                                </a>
+                      
                                 <div class="card-body">
-                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">
+                                        <a asp-action="MyPostDetails" asp-route-id="@post.PostID"
+                                           class="text-dark text-decoration-none hover-link">
+                                            @post.Title
+                                        </a>
+                                    </h5>
                                     <p class="text-muted small mb-1">📍 @post.Location</p>
                                     <p class="text-danger fw-semibold mb-1">
                                         💰 @(post.Price.HasValue ? string.Format("{0:N0} ₫", post.Price) : "Thỏa thuận")
@@ -142,13 +149,33 @@
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
-                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                @* <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
                                      class="card-img-top rounded-top-4"
                                      style="height:220px;object-fit:cover;opacity:0.9;" />
                                 <div class="card-body">
-                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5> *@
+                                <a asp-action="MyPostDetails" asp-route-id="@post.PostID">
+                                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                         class="card-img-top rounded-top-4"
+                                         style="height:220px;object-fit:cover;opacity:0.9;" />
+                                </a>
+
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">
+                                        <a asp-action="MyPostDetails" asp-route-id="@post.PostID"
+                                           class="text-dark text-decoration-none hover-link">
+                                            @post.Title
+                                        </a>
+                                    </h5>
                                     <p class="text-danger small mb-2">❗ Lý do: @post.RejectReason</p>
                                     <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="Edit" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-warning rounded-pill">Sửa</a>
+                                        <a asp-action="Delete" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-danger rounded-pill"
+                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</a>
+                                    </div>
                                 </div>
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-2 shadow">Từ chối</span>
                             </div>
@@ -170,15 +197,58 @@
                     @foreach (var post in expired)
                     {
                         <div class="col-lg-4 col-md-6 col-sm-12">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card opacity-75">
-                                <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
-                                     class="card-img-top rounded-top-4 grayscale"
-                                     style="height:220px;object-fit:cover;opacity:0.8;" />
+                            <div class="card border-0 shadow-sm rounded-4 h-100 position-relative post-card">
+
+                                <a asp-action="MyPostDetails" asp-route-id="@post.PostID">
+                                    <img src="@(post.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                         class="card-img-top rounded-top-4"
+                                         style="height:220px;object-fit:cover;" />
+
+                                </a>
+
                                 <div class="card-body">
-                                    <h5 class="fw-bold text-truncate mb-1 text-secondary">@post.Title</h5>
-                                    <p class="text-muted small mb-3">🕓 @post.CreateAt.ToString("dd/MM/yyyy")</p>
+
+                                    <a asp-action="MyPostDetails" asp-route-id="@post.PostID">
+                                        <h5 class="fw-bold text-truncate mb-1 text-secondary">
+                                            @post.Title
+                                        </h5>
+                                    </a>
+                                    <p class="text-muted small mb-3">
+                                        🕓 @post.CreateAt.ToString("dd/MM/yyyy")
+                                    </p>
+
+                                    <!--NÚT HÀNH ĐỘNG -->
+                                    <div class="d-flex justify-content-between mt-2">
+
+                                        <!-- NÚT SỬA -->
+                                        <a asp-action="Edit" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-warning rounded-pill">
+                                            Sửa
+                                        </a>
+
+                                        <!-- NÚT ĐĂNG LẠI -->
+                                        <form asp-action="RequestReviewPost"
+                                              asp-route-id="@post.PostID"
+                                              method="post"
+                                              onsubmit="return confirm('Bạn muốn đăng lại bài này? Sẽ tốn 10 Coins!')">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-primary rounded-pill">
+                                                Đăng lại
+                                            </button>
+                                        </form>
+
+                                        <!-- NÚT XÓA -->
+                                        <a asp-action="Delete" asp-route-id="@post.PostID"
+                                           class="btn btn-sm btn-outline-danger rounded-pill"
+                                           onclick="return confirm('Bạn chắc chắn muốn xóa?')">
+                                            Xóa
+                                        </a>
+                                    </div>
                                 </div>
-                                <span class="badge bg-secondary position-absolute top-0 start-0 m-2 shadow">Hết hạn</span>
+
+                                <span class="badge bg-secondary position-absolute top-0 start-0 m-2 shadow">
+                                    Hết hạn
+                                </span>
                             </div>
                         </div>
                     }
